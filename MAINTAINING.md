@@ -63,10 +63,12 @@ fetches them (the `experimentStats` collection in `src/content.config.ts`) from 
 public endpoint, so they are static HTML, and serves the copy it rendered at
 `/data/intefl-experiments.json`. If the endpoint is down, the build uses the newer of that
 deployed copy and the committed snapshot `src/data/intefl-experiments.json`, so an outage
-never breaks a deploy.
+never breaks a deploy. The CDN caches the deployed copy for up to 10 minutes, so a build in
+that window can fall back to the copy from one deploy earlier.
 
-`refresh-stats.yml` runs hourly. It compares the live stats with the deployed copy and, when
-they differ, starts `deploy.yml`. While the endpoint is down it leaves a warning and does
+`refresh-stats.yml` runs hourly. `scripts/stats-changed.mjs` validates the live stats with the
+site's schema and compares them with the deployed copy; when they differ, the workflow starts
+`deploy.yml`. While the endpoint is down it leaves a warning and does
 nothing. GitHub turns off scheduled workflows in a public repository after 60 days without
 activity; if the counts stop moving, re-enable it under Actions.
 

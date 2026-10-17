@@ -9,7 +9,7 @@
 // list whose text carries the number, the pattern accessible-chart guidance recommends
 // over ARIA-annotated SVG. Sources: datadoghq.com/blog/timeseries-metric-graphs-101,
 // sarasoueidan.com/blog/accessible-data-charts-for-khan-academy-2018-annual-report
-import type { StatsView } from "../lib/experiment-stats";
+import { toDate, type StatsView } from "../lib/experiment-stats";
 
 interface Props {
   view: StatsView;
@@ -32,7 +32,7 @@ const updated = new Intl.DateTimeFormat("en-US", {
   minute: "2-digit",
   timeZone: "America/New_York",
   timeZoneName: "short",
-}).format(new Date(view.generatedAt));
+}).format(toDate(view.generatedAt));
 const hasAlpha = view.datasets.some((g) => g.rows.some((r) => r.detail?.includes("α")));
 const panels = [
   { id: "attacks", title: "Attacks tested", groups: view.attacks, max: view.attackMax },
@@ -300,7 +300,7 @@ const panels = [
   .axis span.end {
     justify-self: end;
   }
-  /* A long series keeps only quarter-month ticks where they would otherwise collide. */
+  /* At narrow widths a long series keeps only its major ticks. */
   @container (max-width: 560px) {
     .long .axis .minor {
       visibility: hidden;

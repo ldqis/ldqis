@@ -6,8 +6,10 @@ import {
   experimentStatsSchema,
   parseDataset,
   resolveStats,
+  statsDiffer,
   strategyLabel,
   summarize,
+  toDate,
 } from "../../src/lib/experiment-stats";
 
 const stats = experimentStatsSchema.parse(snapshot);
@@ -112,19 +114,37 @@ describe("summarize", () => {
     expect(v.datasets[0].rows[0]).toMatchObject({ count: 15, detail: "IID: 5, other: 10" });
   });
 
-  it("marks quarter months major, shows the year at January, and pins the last tick", () => {
+  it("marks quarter months major, shows the year at January, and pins ticks near the end", () => {
     const weeks = ["2026-11-30", "2026-12-07", "2027-01-04", "2027-02-01", "2027-02-08"];
     const v = summarize({
       ...stats,
       experiments_per_week: weeks.map((week_start) => ({ week_start, count: 1 })),
     });
+    // Nov is dropped: Dec follows one week later and the labels would collide.
     expect(v.weeks.map((w) => w.tick)).toEqual([
-      { text: "Nov", major: true, end: false },
+      undefined,
       { text: "Dec", major: false, end: false },
       { text: "2027", major: true, end: false },
       { text: "Feb", major: false, end: true },
       undefined,
     ]);
+  });
+
+  it("widens the tick stride as the series grows", () => {
+    const start = Date.parse("2026-03-02T00:00:00Z");
+    const series = (n: number) =>
+      Array.from({ length: n }, (_, i) => ({
+        week_start: new Date(start + i * 7 * 86_400_000).toISOString().slice(0, 10),
+        count: 1,
+      }));
+    const texts = (n: number, major?: boolean) =>
+      summarize({ ...stats, experiments_per_week: series(n) }).weeks.flatMap((w) =>
+        w.tick && (major === undefined || w.tick.major === major) ? [w.tick.text] : [],
+      );
+    expect(texts(100)).toEqual(["Apr", "Jul", "Oct", "2027", "Apr", "Jul", "Oct", "2028"]);
+    expect(texts(100, true)).toEqual(["Jul", "2027", "Jul", "2028"]);
+    // The first week's month (Mar) is labelled as a minor tick: Jul is 18 weeks on.
+    expect(texts(200)).toEqual(["Mar", "Jul", "2027", "Jul", "2028", "Jul", "2029", "Jul"]);
   });
 
   it("ticks each month once and picks the busiest week", () => {
@@ -136,7 +156,7 @@ describe("summarize", () => {
         { week_start: "2026-04-06", count: 9 },
       ],
     });
-    expect(v.weeks.map((w) => w.tick?.text)).toEqual(["Mar", undefined, "Apr"]);
+    expect(v.weeks.map((w) => w.tick?.text)).toEqual([undefined, undefined, "Apr"]);
     expect(v.peak?.start).toBe("2026-04-06");
     expect(v.since).toBe("March 2026");
   });
@@ -159,6 +179,26 @@ describe("experimentStatsSchema", () => {
       experiments_per_attack: [{ name: "none", count: 1, share: 0.5 }],
     });
     expect(parsed).toMatchObject({ new_field: 1, experiments_per_attack: [{ share: 0.5 }] });
+  });
+});
+
+describe("statsDiffer", () => {
+  it("ignores generated_at, key order and number spelling", () => {
+    const a = JSON.parse('{"total_hours": 165.0, "generated_at": "x", "b": [{"n": 1, "m": 2}]}');
+    const b = JSON.parse('{"b": [{"m": 2, "n": 1}], "generated_at": "y", "total_hours": 165}');
+    expect(statsDiffer(a, b)).toBe(false);
+  });
+
+  it("sees a changed count and a missing copy", () => {
+    expect(statsDiffer({ total: 1 }, { total: 2 })).toBe(true);
+    expect(statsDiffer(snapshot, null)).toBe(true);
+  });
+});
+
+describe("toDate", () => {
+  it("reads a timestamp with no offset as UTC", () => {
+    expect(toDate("2026-10-17T02:30:00").toISOString()).toBe("2026-10-17T02:30:00.000Z");
+    expect(toDate("2026-10-17T02:30:00-04:00").toISOString()).toBe("2026-10-17T06:30:00.000Z");
   });
 });
 

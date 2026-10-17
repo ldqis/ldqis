@@ -62,11 +62,27 @@ export async function resolveStats(
   const valid = (await Promise.all(fallbacks.map(attempt))).filter((r) => r !== undefined);
   const newest = valid.reduce<(typeof valid)[number] | undefined>(
     (best, r) =>
-      !best || Date.parse(r.stats.generated_at) > Date.parse(best.stats.generated_at) ? r : best,
+      !best || toDate(r.stats.generated_at) > toDate(best.stats.generated_at) ? r : best,
     undefined,
   );
   if (newest) return newest;
   throw new Error("no experiment-stats source answered with a valid payload");
+}
+
+/** Whether two payloads differ in anything but `generated_at`, ignoring key order. */
+export function statsDiffer(a: unknown, b: unknown): boolean {
+  const canonical = (v: unknown): unknown =>
+    Array.isArray(v)
+      ? v.map(canonical)
+      : v && typeof v === "object"
+        ? Object.fromEntries(
+            Object.keys(v)
+              .filter((k) => k !== "generated_at")
+              .sort()
+              .map((k) => [k, canonical((v as Record<string, unknown>)[k])]),
+          )
+        : v;
+  return JSON.stringify(canonical(a)) !== JSON.stringify(canonical(b));
 }
 
 export const fetchJson =
@@ -198,6 +214,10 @@ export const strategyLabel = (key: string) => STRATEGIES[key] ?? key;
 
 const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 
+/** A timestamp as a Date, reading one with no offset as UTC so the build machine's zone never shifts it. */
+export const toDate = (iso: string) =>
+  new Date(/(Z|[+-]\d{2}:\d{2})$/i.test(iso) ? iso : `${iso}Z`);
+
 /** "Apr 6, 2026" from an ISO date (a calendar day, so read in UTC and never shifted). */
 export function formatDay(iso: string): string {
   const d = new Date(`${iso}T00:00:00Z`);
@@ -211,7 +231,7 @@ export const formatLabDay = (iso: string) =>
     day: "numeric",
     year: "numeric",
     timeZone: "America/New_York",
-  }).format(new Date(iso));
+  }).format(toDate(iso));
 
 const MONTH_NAMES = [
   "January",
@@ -229,10 +249,32 @@ const MONTH_NAMES = [
 ];
 const monthYear = (iso: string) => `${MONTH_NAMES[Number(iso.slice(5, 7)) - 1]} ${iso.slice(0, 4)}`;
 
-// A month tick on the weekly axis. January shows its year instead of "Jan". Quarter months
-// (and the first tick) are major; on a long series the minor ones hide at narrow widths.
-// `end` keeps a tick near the right edge from overflowing the chart.
+// A month tick on the weekly axis. January shows its year instead of "Jan". Minor ticks hide
+// at narrow widths on a long series; `end` right-aligns a tick near the edge so it stays
+// inside the chart.
 export type Tick = { text: string; major: boolean; end: boolean };
+
+// Tick spacing in months, widening with the series so labels never crowd: [minor, major].
+const tickStride = (weeks: number): [number, number] =>
+  weeks <= 60 ? [1, 3] : weeks <= 130 ? [3, 6] : weeks <= 260 ? [6, 12] : [12, 24];
+
+function axisTicks(starts: string[]): (Tick | undefined)[] {
+  const n = starts.length;
+  const [every, majorEvery] = tickStride(n);
+  const month = (i: number) => Number(starts[i].slice(5, 7)) - 1;
+  const text = (i: number) => (month(i) === 0 ? starts[i].slice(0, 4) : MONTHS[month(i)]);
+  const edge = Math.max(2, Math.ceil(n * 0.08));
+  const tick = (i: number, major: boolean): Tick => ({ text: text(i), major, end: n - i <= edge });
+  const ticks = starts.map((_, i) =>
+    i > 0 && month(i) !== month(i - 1) && month(i) % every === 0
+      ? tick(i, month(i) % majorEvery === 0)
+      : undefined,
+  );
+  // Label the first week too, as a minor tick, unless the next tick sits too close to it.
+  const next = ticks.findIndex((t) => t !== undefined);
+  if (n && !ticks[0] && (next === -1 || next >= 3 * every)) ticks[0] = tick(0, false);
+  return ticks;
+}
 export type Week = { start: string; count: number; label: string; tick?: Tick };
 export type Row = { key: string; label: string; count: number; detail?: string };
 export type Group = { label: string; note?: string; total: number; rows: Row[] };
@@ -250,17 +292,9 @@ const byPartition = (a: { label: string }, b: { label: string }) =>
 const sum = (rows: { count: number }[]) => rows.reduce((n, r) => n + r.count, 0);
 
 export function summarize(stats: ExperimentStats) {
-  const weeks: Week[] = stats.experiments_per_week.map((w, i, all) => {
-    const month = Number(w.week_start.slice(5, 7)) - 1;
-    const prev = i ? Number(all[i - 1].week_start.slice(5, 7)) - 1 : -1;
-    const tick: Tick | undefined =
-      month === prev
-        ? undefined
-        : {
-            text: month === 0 ? w.week_start.slice(0, 4) : MONTHS[month],
-            major: i === 0 || month % 3 === 0,
-            end: i >= all.length - 2,
-          };
+  const ticks = axisTicks(stats.experiments_per_week.map((w) => w.week_start));
+  const weeks: Week[] = stats.experiments_per_week.map((w, i) => {
+    const tick = ticks[i];
     return {
       start: w.week_start,
       count: w.count,

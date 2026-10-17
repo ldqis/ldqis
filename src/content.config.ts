@@ -197,8 +197,9 @@ const experimentStats = defineCollection({
       const { stats, source } = await resolveStats(
         { name: STATS_ENDPOINT, get: fetchJson(STATS_ENDPOINT) },
         [
-          // The query string skips the CDN's 10-minute cache of the deployed copy.
-          { name: STATS_MIRROR, get: fetchJson(`${STATS_MIRROR}?t=${Date.now()}`) },
+          // Pages' CDN caches this copy for up to 10 minutes and ignores query strings, so
+          // within 10 minutes of a deploy it can be one deploy behind.
+          { name: STATS_MIRROR, get: fetchJson(STATS_MIRROR) },
           { name: "src/data/intefl-experiments.json", get: async () => statsSnapshot },
         ],
         (msg) => logger.warn(msg),

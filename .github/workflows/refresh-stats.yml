@@ -2,9 +2,10 @@ name: Refresh experiment stats
 
 # research(2026-10): the InteFL experiment stats are fetched at build time, so this checks
 # hourly whether they changed and, only then, dispatches the Pages deploy. It is a separate
-# workflow so deploy.yml's push and manual runs (and their `pages` concurrency group) are
-# untouched; a workflow_dispatch sent with GITHUB_TOKEN does start a run. Numbers are
-# normalized before comparing (`.+0`), because jq keeps literals as written (165.0 vs 165).
+# workflow so deploy.yml's push and manual runs (and its `pages` concurrency group) are
+# untouched; a workflow_dispatch sent with GITHUB_TOKEN does start a run. The check
+# (scripts/stats-changed.mjs) validates with the site's own schema, so a payload the build
+# would reject never triggers a deploy.
 # Source: https://docs.github.com/en/actions/how-tos/write-workflows/choose-when-workflows-run/trigger-a-workflow
 
 on:
@@ -22,34 +23,30 @@ jobs:
   refresh:
     runs-on: ubuntu-latest
     permissions:
+      contents: read
       actions: write
-    defaults:
-      run:
-        shell: bash
     steps:
-      - name: Redeploy if the live stats differ from the deployed copy
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Set up Node
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version-file: ".nvmrc"
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci --ignore-scripts
+
+      - name: Compare live stats with the deployed copy
+        id: check
+        run: node scripts/stats-changed.mjs
+
+      - name: Deploy the new stats
+        if: steps.check.outputs.changed == 'true'
         env:
           GH_TOKEN: ${{ github.token }}
           GH_REPO: ${{ github.repository }}
-          LIVE: https://gcis-lrvcs-rl.gccis.rit.edu/public/stats
-          DEPLOYED: https://dataqualitylabs.com/data/intefl-experiments.json
-        run: |
-          # The same fields the site's schema requires; anything else is not a stats payload.
-          shape='has("total_experiments") and has("successful_experiments") and has("total_hours")
-            and (.experiments_per_week | type == "array")
-            and (.experiments_per_dataset | type == "array")
-            and (.experiments_per_attack | type == "array")'
-          norm='del(.generated_at) | walk(if type == "number" then . + 0 else . end)'
-          if ! body=$(curl -fsS --max-time 30 "$LIVE") \
-            || ! jq -e "$shape" <<<"$body" >/dev/null 2>&1; then
-            echo "::warning::InteFL stats endpoint is down or not serving stats; nothing to do"
-            exit 0
-          fi
-          live=$(jq -S "$norm" <<<"$body")
-          deployed=$(curl -fsS --max-time 30 "$DEPLOYED?t=$(date +%s)" | jq -S "$norm" || true)
-          if [ "$live" = "$deployed" ]; then
-            echo "Stats unchanged"
-          else
-            echo "Stats changed; dispatching the Pages deploy"
-            gh workflow run deploy.yml --ref main
-          fi
+        run: gh workflow run deploy.yml --ref main
