@@ -185,9 +185,9 @@ const news = defineCollection({
 
 // research(2026-10): Astro ships no remote loader, so this is an object loader (it gets
 // `logger` + `parseData`, which an inline loader does not). The data store only changes at
-// build time; .github/workflows/deploy.yml rebuilds hourly when the stats change. Sources in
-// order: InteFL's live endpoint, then the copy this site last deployed (so an outage never
-// rolls the numbers back), then the committed snapshot (so an offline build still works).
+// build time; .github/workflows/refresh-stats.yml redeploys hourly when the stats change.
+// InteFL's live endpoint wins; if it is down, the newer of the copy this site last deployed
+// and the committed snapshot (so an offline build still works) is used.
 // Entry ids are project ids: projects/[id].astro renders the stats on that project's page.
 // Source: https://docs.astro.build/en/reference/content-loader-reference/
 const experimentStats = defineCollection({
@@ -195,13 +195,11 @@ const experimentStats = defineCollection({
     name: "intefl-experiment-stats",
     load: async ({ store, logger, parseData }) => {
       const { stats, source } = await resolveStats(
+        { name: STATS_ENDPOINT, get: fetchJson(STATS_ENDPOINT) },
         [
-          { name: STATS_ENDPOINT, get: fetchJson(STATS_ENDPOINT) },
-          { name: STATS_MIRROR, get: fetchJson(STATS_MIRROR) },
-          {
-            name: "src/data/intefl-experiments.json",
-            get: async () => statsSnapshot,
-          },
+          // The query string skips the CDN's 10-minute cache of the deployed copy.
+          { name: STATS_MIRROR, get: fetchJson(`${STATS_MIRROR}?t=${Date.now()}`) },
+          { name: "src/data/intefl-experiments.json", get: async () => statsSnapshot },
         ],
         (msg) => logger.warn(msg),
       );

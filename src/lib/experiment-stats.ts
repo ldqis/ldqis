@@ -17,7 +17,7 @@ export const experimentStatsSchema = z.looseObject({
   latest_experiment: z
     .looseObject({
       id: z.number().int(),
-      created_at: z.iso.datetime({ offset: true }),
+      created_at: z.iso.datetime({ offset: true, local: true }),
       dataset: z.string(),
       strategy: z.string(),
     })
@@ -25,27 +25,29 @@ export const experimentStatsSchema = z.looseObject({
   experiments_per_week: z.array(z.looseObject({ week_start: z.iso.date(), count })),
   experiments_per_dataset: z.array(named),
   experiments_per_attack: z.array(named),
-  generated_at: z.iso.datetime({ offset: true }),
+  generated_at: z.iso.datetime({ offset: true, local: true }),
 });
 
 export type ExperimentStats = z.infer<typeof experimentStatsSchema>;
 
 /** The lab's experiment database, run by InteFL. CORS-open and cached for 60 s. */
 export const STATS_ENDPOINT = "https://gcis-lrvcs-rl.gccis.rit.edu/public/stats";
-/** The copy this site last deployed, served by src/pages/data/intefl-experiments.json.ts. */
+/** The copy this site last deployed, served by src/pages/data/[id]-experiments.json.ts. */
 export const STATS_MIRROR = "https://dataqualitylabs.com/data/intefl-experiments.json";
 
 export type StatsSource = { name: string; get: () => Promise<unknown> };
 
 /**
- * The first source that answers with a valid payload, in order. Each failure is reported
- * through `warn` and the next source is tried; throws only when every source fails.
+ * The live source's payload when it is valid; otherwise the newest valid fallback by
+ * `generated_at`, so a fallback can never roll the numbers back past another one. Each
+ * failure is reported through `warn`; throws only when no source is valid.
  */
 export async function resolveStats(
-  sources: StatsSource[],
+  live: StatsSource,
+  fallbacks: StatsSource[],
   warn: (message: string) => void,
 ): Promise<{ stats: ExperimentStats; source: string }> {
-  for (const { name, get } of sources) {
+  const attempt = async ({ name, get }: StatsSource) => {
     try {
       const parsed = experimentStatsSchema.safeParse(await get());
       if (parsed.success) return { stats: parsed.data, source: name };
@@ -53,7 +55,17 @@ export async function resolveStats(
     } catch (err) {
       warn(`${name}: ${err instanceof Error ? err.message : String(err)}`);
     }
-  }
+    return undefined;
+  };
+  const first = await attempt(live);
+  if (first) return first;
+  const valid = (await Promise.all(fallbacks.map(attempt))).filter((r) => r !== undefined);
+  const newest = valid.reduce<(typeof valid)[number] | undefined>(
+    (best, r) =>
+      !best || Date.parse(r.stats.generated_at) > Date.parse(best.stats.generated_at) ? r : best,
+    undefined,
+  );
+  if (newest) return newest;
   throw new Error("no experiment-stats source answered with a valid payload");
 }
 
@@ -103,7 +115,7 @@ export function parseDataset(key: string): {
   domain: string;
   variant?: string;
 } {
-  const m = key.match(/^(.+)_(iid|niid|a\d{2,})$/);
+  const m = key.match(/^(.+)_(iid|niid|a\d+)$/);
   const familyKey = m && FAMILIES[m[1]] ? m[1] : key;
   const family = FAMILIES[familyKey];
   const variant = m && familyKey === m[1] ? variantLabel(m[2]) : undefined;
@@ -115,11 +127,15 @@ export function parseDataset(key: string): {
   };
 }
 
+// InteFL's partition script tags α as "a" + str(alpha) without the dot, so a20 is 2.0 and
+// a5 an integer 5. Longer tags are ambiguous (a105 is 10.5 or 1.05) and show as written.
 function variantLabel(tag: string): string {
   if (tag === "iid") return "IID";
   if (tag === "niid") return "non-IID";
   const digits = tag.slice(1);
-  return `α ${digits[0]}.${digits.slice(1)}`;
+  if (digits.length === 1) return `α ${digits}`;
+  if (digits.length === 2) return `α ${digits[0]}.${digits[1]}`;
+  return tag;
 }
 
 export function datasetLabel(key: string): string {
@@ -182,11 +198,20 @@ export const strategyLabel = (key: string) => STRATEGIES[key] ?? key;
 
 const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 
-/** "Apr 6, 2026" from an ISO date, in UTC so a week never shifts by a day. */
+/** "Apr 6, 2026" from an ISO date (a calendar day, so read in UTC and never shifted). */
 export function formatDay(iso: string): string {
-  const d = new Date(iso.length === 10 ? `${iso}T00:00:00Z` : iso);
+  const d = new Date(`${iso}T00:00:00Z`);
   return `${MONTHS[d.getUTCMonth()]} ${d.getUTCDate()}, ${d.getUTCFullYear()}`;
 }
+
+/** The lab's local day for a timestamp, e.g. "Oct 16, 2026". */
+export const formatLabDay = (iso: string) =>
+  new Intl.DateTimeFormat("en-US", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+    timeZone: "America/New_York",
+  }).format(new Date(iso));
 
 const MONTH_NAMES = [
   "January",
@@ -204,14 +229,22 @@ const MONTH_NAMES = [
 ];
 const monthYear = (iso: string) => `${MONTH_NAMES[Number(iso.slice(5, 7)) - 1]} ${iso.slice(0, 4)}`;
 
-export type Week = { start: string; count: number; label: string; tick?: string };
+// A month tick on the weekly axis. January shows its year instead of "Jan". Quarter months
+// (and the first tick) are major; on a long series the minor ones hide at narrow widths.
+// `end` keeps a tick near the right edge from overflowing the chart.
+export type Tick = { text: string; major: boolean; end: boolean };
+export type Week = { start: string; count: number; label: string; tick?: Tick };
 export type Row = { key: string; label: string; count: number; detail?: string };
 export type Group = { label: string; note?: string; total: number; rows: Row[] };
 
 const byCount = <T extends { count: number }>(a: T, b: T) => b.count - a.count;
 // IID, then non-IID, then Dirichlet splits from most to least skewed (ascending α).
-const partitionRank = (label: string) =>
-  label === "IID" ? -2 : label === "non-IID" ? -1 : Number(label.replace("α ", ""));
+const partitionRank = (label: string) => {
+  if (label === "IID") return -2;
+  if (label === "non-IID") return -1;
+  const alpha = Number(label.replace("α ", ""));
+  return Number.isNaN(alpha) ? Infinity : alpha;
+};
 const byPartition = (a: { label: string }, b: { label: string }) =>
   partitionRank(a.label) - partitionRank(b.label);
 const sum = (rows: { count: number }[]) => rows.reduce((n, r) => n + r.count, 0);
@@ -220,11 +253,19 @@ export function summarize(stats: ExperimentStats) {
   const weeks: Week[] = stats.experiments_per_week.map((w, i, all) => {
     const month = Number(w.week_start.slice(5, 7)) - 1;
     const prev = i ? Number(all[i - 1].week_start.slice(5, 7)) - 1 : -1;
+    const tick: Tick | undefined =
+      month === prev
+        ? undefined
+        : {
+            text: month === 0 ? w.week_start.slice(0, 4) : MONTHS[month],
+            major: i === 0 || month % 3 === 0,
+            end: i >= all.length - 2,
+          };
     return {
       start: w.week_start,
       count: w.count,
       label: formatDay(w.week_start),
-      ...(month !== prev && { tick: MONTHS[month] }),
+      ...(tick && { tick }),
     };
   });
   const peak = weeks.reduce<Week | undefined>(
@@ -274,6 +315,9 @@ export function summarize(stats: ExperimentStats) {
   }
   const domains = new Map<string, Row[]>();
   for (const f of families.values()) {
+    // A bare keyword (femnist) beside partitioned ones (femnist_iid) counts as "other".
+    const rest = f.count - sum(f.parts);
+    if (f.parts.length && rest > 0) f.parts.push({ label: "other", count: rest });
     const detail = f.parts.length
       ? f.parts
           .sort(byPartition)
@@ -297,7 +341,7 @@ export function summarize(stats: ExperimentStats) {
     weeks,
     peak: peak && peak.count > 0 ? peak : undefined,
     latest: latest && {
-      day: formatDay(latest.created_at),
+      day: formatLabDay(latest.created_at),
       dataset: datasetLabel(latest.dataset),
       strategy: strategyLabel(latest.strategy),
     },

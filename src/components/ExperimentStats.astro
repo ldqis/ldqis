@@ -50,8 +50,9 @@ const panels = [
   </h2>
 
   <p class="lede">
-    {fmt(view.total)} experiments{view.since && ` since ${view.since}`}. {fmt(view.successful)} ran
-    to completion, using {fmt(Math.round(view.hours))} hours of compute.
+    {plural(view.total)}
+    {view.since && ` since ${view.since}`}. {fmt(view.successful)} ran to completion, using{" "}
+    {fmt(Math.round(view.hours))} hours of compute.
   </p>
   {view.latest && (
     <p class="mt-3 text-text-dim">
@@ -59,75 +60,90 @@ const panels = [
     </p>
   )}
 
-  <figure class="mt-10">
-    <figcaption class="flex flex-wrap items-baseline justify-between gap-x-6 gap-y-1">
-      <span class="text-sm font-medium text-text">Experiments per week</span>
-      <span id="experiments-readout" class="readout text-sm text-text-dim" aria-live="polite">
-        {peakText}
-      </span>
-    </figcaption>
+  {view.weeks.length > 0 && (
+    <figure class="mt-10">
+      <figcaption class="flex flex-wrap items-baseline justify-between gap-x-6 gap-y-1">
+        <span class="text-sm font-medium text-text">Experiments per week</span>
+        <span id="experiments-readout" class="readout text-sm text-text-dim" aria-live="polite">
+          {peakText}
+        </span>
+      </figcaption>
 
-    <div
-      class="chart"
-      role="group"
-      tabindex="0"
-      aria-roledescription="chart"
-      aria-label="Experiments per week. Use the left and right arrow keys to read each week."
-      aria-describedby="experiments-readout"
-      data-chart
-      data-peak={peakText}
-      data-peak-index={peakIndex}
-      style={`--n: ${view.weeks.length}`}
-    >
-      <ol class="bars" aria-hidden="true">
-        {view.weeks.map((w, i) => (
-          <li
-            class:list={[w.count === 0 && "zero"]}
-            style={`--h: ${w.count / weekMax}; --i: ${i}`}
-            data-label={w.label}
-            data-count={w.count}
-          />
-        ))}
-      </ol>
-      {view.peak && (
-        <div class="marks" aria-hidden="true">
-          <span style={`grid-column: ${peakIndex + 1}; --h: ${view.peak.count / weekMax}`}>
-            {fmt(view.peak.count)}
-          </span>
-        </div>
-      )}
-      <div class="axis" aria-hidden="true">
-        {view.weeks.map((w, i) => w.tick && <span style={`grid-column: ${i + 1}`}>{w.tick}</span>)}
-      </div>
-    </div>
-
-    <details class="mt-4 text-sm">
-      <summary class="cursor-pointer text-text-dim hover:text-rit-orange-text">
-        Show the weekly counts as a table
-      </summary>
-      <table class="mt-3 w-full max-w-[360px] text-left">
-        <caption class="sr-only">Experiments per week</caption>
-        <thead>
-          <tr>
-            <th scope="col" class="py-1 font-medium">
-              Week of
-            </th>
-            <th scope="col" class="py-1 text-right font-medium">
-              Experiments
-            </th>
-          </tr>
-        </thead>
-        <tbody>
-          {view.weeks.map((w) => (
-            <tr class="border-t border-line">
-              <td class="py-1 text-text-dim">{w.label}</td>
-              <td class="py-1 text-right tabular-nums">{fmt(w.count)}</td>
-            </tr>
+      <div
+        role="group"
+        tabindex="0"
+        aria-roledescription="chart"
+        aria-label="Experiments per week. Use the left and right arrow keys to read each week."
+        data-chart
+        data-readout="experiments-readout"
+        data-peak={peakText}
+        data-peak-index={peakIndex}
+        class:list={["chart", view.weeks.length > 26 && "long"]}
+        style={`--n: ${view.weeks.length}`}
+      >
+        <ol class="bars" aria-hidden="true">
+          {view.weeks.map((w, i) => (
+            <li
+              class:list={[w.count === 0 && "zero"]}
+              style={`--h: ${w.count / weekMax}; --i: ${i}`}
+              data-label={w.label}
+              data-count={w.count}
+            />
           ))}
-        </tbody>
-      </table>
-    </details>
-  </figure>
+        </ol>
+        {view.peak && (
+          <div class="marks" aria-hidden="true">
+            <span
+              class:list={[peakIndex < 2 && "start", peakIndex >= view.weeks.length - 2 && "end"]}
+              style={`grid-column: ${peakIndex + 1}; --h: ${view.peak.count / weekMax}`}
+            >
+              {fmt(view.peak.count)}
+            </span>
+          </div>
+        )}
+        <div class="axis" aria-hidden="true">
+          {view.weeks.map(
+            (w, i) =>
+              w.tick && (
+                <span
+                  class:list={[!w.tick.major && "minor", w.tick.end && "end"]}
+                  style={`grid-column: ${i + 1}`}
+                >
+                  {w.tick.text}
+                </span>
+              ),
+          )}
+        </div>
+      </div>
+
+      <details class="mt-4 text-sm">
+        <summary class="cursor-pointer text-text-dim hover:text-rit-orange-text">
+          Show the weekly counts as a table
+        </summary>
+        <table class="mt-3 w-full max-w-[360px] text-left">
+          <caption class="sr-only">Experiments per week</caption>
+          <thead>
+            <tr>
+              <th scope="col" class="py-1 font-medium">
+                Week of
+              </th>
+              <th scope="col" class="py-1 text-right font-medium">
+                Experiments
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            {view.weeks.map((w) => (
+              <tr class="border-t border-line">
+                <td class="py-1 text-text-dim">{w.label}</td>
+                <td class="py-1 text-right tabular-nums">{fmt(w.count)}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </details>
+    </figure>
+  )}
 
   <div class="mt-14 grid grid-cols-1 gap-x-12 gap-y-14 md:grid-cols-2">
     {panels.map((panel) => (
@@ -199,6 +215,7 @@ const panels = [
     border-radius: 10px;
     touch-action: pan-y;
     cursor: crosshair;
+    container-type: inline-size;
   }
   .chart:focus-visible {
     outline: 2px solid var(--color-rit-orange-text);
@@ -276,6 +293,19 @@ const panels = [
     grid-row: 1;
     white-space: nowrap;
   }
+  .marks span.start {
+    justify-self: start;
+  }
+  .marks span.end,
+  .axis span.end {
+    justify-self: end;
+  }
+  /* A long series keeps only quarter-month ticks where they would otherwise collide. */
+  @container (max-width: 560px) {
+    .long .axis .minor {
+      visibility: hidden;
+    }
+  }
 
   .row {
     display: grid;
@@ -325,9 +355,9 @@ const panels = [
   // falls back to the busiest week.
   for (const chart of document.querySelectorAll<HTMLElement>("[data-chart]")) {
     const list = chart.querySelector<HTMLOListElement>(".bars");
-    const readout = document.getElementById(chart.getAttribute("aria-describedby") ?? "");
-    if (!list || !readout) continue;
-    const bars = [...list.children] as HTMLElement[];
+    const readout = document.getElementById(chart.dataset.readout ?? "");
+    const bars = [...(list?.children ?? [])] as HTMLElement[];
+    if (!list || !readout || !bars.length) continue;
     const peak = Number(chart.dataset.peakIndex ?? -1);
     let active = -1;
 

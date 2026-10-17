@@ -61,13 +61,14 @@ that shouldn't match queries. Result titles come from each page's `og:title`.
 The InteFL project page and its homepage card show the lab's experiment counts. The build
 fetches them (the `experimentStats` collection in `src/content.config.ts`) from InteFL's
 public endpoint, so they are static HTML, and serves the copy it rendered at
-`/data/intefl-experiments.json`. If the endpoint is down, the build falls back to that
-deployed copy, then to the committed snapshot `src/data/intefl-experiments.json`, so an
-outage never rolls the numbers back or breaks a deploy.
+`/data/intefl-experiments.json`. If the endpoint is down, the build uses the newer of that
+deployed copy and the committed snapshot `src/data/intefl-experiments.json`, so an outage
+never breaks a deploy.
 
-`deploy.yml` also runs hourly. It compares the live stats with the deployed copy and rebuilds
-only when they differ. GitHub turns off scheduled workflows in a public repository after 60
-days without activity; if the counts stop moving, re-enable the workflow under Actions.
+`refresh-stats.yml` runs hourly. It compares the live stats with the deployed copy and, when
+they differ, starts `deploy.yml`. While the endpoint is down it leaves a warning and does
+nothing. GitHub turns off scheduled workflows in a public repository after 60 days without
+activity; if the counts stop moving, re-enable it under Actions.
 
 Labels for datasets, attacks and strategies live in `src/lib/experiment-stats.ts`. A keyword
 it does not know shows as the raw keyword, so a new one never breaks the build; add its label

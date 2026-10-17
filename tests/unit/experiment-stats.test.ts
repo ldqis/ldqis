@@ -19,6 +19,11 @@ describe("parseDataset", () => {
     expect(parseDataset("cifar100_a50").variant).toBe("α 5.0");
   });
 
+  it("reads a one-digit tag as an integer α and leaves an ambiguous tag as written", () => {
+    expect(parseDataset("cifar10_a5").variant).toBe("α 5");
+    expect(parseDataset("cifar10_a105").variant).toBe("a105");
+  });
+
   it("names IID and non-IID splits", () => {
     expect(datasetLabel("femnist_iid")).toBe("FEMNIST (IID)");
     expect(datasetLabel("femnist_niid")).toBe("FEMNIST (non-IID)");
@@ -96,6 +101,32 @@ describe("summarize", () => {
     });
   });
 
+  it("counts a bare keyword beside its partitions as other", () => {
+    const v = summarize({
+      ...stats,
+      experiments_per_dataset: [
+        { name: "femnist", count: 10 },
+        { name: "femnist_iid", count: 5 },
+      ],
+    });
+    expect(v.datasets[0].rows[0]).toMatchObject({ count: 15, detail: "IID: 5, other: 10" });
+  });
+
+  it("marks quarter months major, shows the year at January, and pins the last tick", () => {
+    const weeks = ["2026-11-30", "2026-12-07", "2027-01-04", "2027-02-01", "2027-02-08"];
+    const v = summarize({
+      ...stats,
+      experiments_per_week: weeks.map((week_start) => ({ week_start, count: 1 })),
+    });
+    expect(v.weeks.map((w) => w.tick)).toEqual([
+      { text: "Nov", major: true, end: false },
+      { text: "Dec", major: false, end: false },
+      { text: "2027", major: true, end: false },
+      { text: "Feb", major: false, end: true },
+      undefined,
+    ]);
+  });
+
   it("ticks each month once and picks the busiest week", () => {
     const v = summarize({
       ...stats,
@@ -105,7 +136,7 @@ describe("summarize", () => {
         { week_start: "2026-04-06", count: 9 },
       ],
     });
-    expect(v.weeks.map((w) => w.tick)).toEqual(["Mar", undefined, "Apr"]);
+    expect(v.weeks.map((w) => w.tick?.text)).toEqual(["Mar", undefined, "Apr"]);
     expect(v.peak?.start).toBe("2026-04-06");
     expect(v.since).toBe("March 2026");
   });
@@ -132,24 +163,36 @@ describe("experimentStatsSchema", () => {
 });
 
 describe("resolveStats", () => {
-  it("falls through a failing and an invalid source to the first valid one", async () => {
+  const at = (generated_at: string) => ({ ...snapshot, generated_at });
+
+  it("uses the live source when it is valid", async () => {
+    const got = await resolveStats(
+      { name: "live", get: async () => at("2026-10-17T21:00:00Z") },
+      [{ name: "mirror", get: async () => at("2026-10-18T00:00:00Z") }],
+      () => {},
+    );
+    expect(got.source).toBe("live");
+  });
+
+  it("falls back to the newest valid copy, never an older one", async () => {
     const warnings: string[] = [];
     const got = await resolveStats(
+      { name: "live", get: async () => Promise.reject(new Error("timeout")) },
       [
-        { name: "down", get: async () => Promise.reject(new Error("timeout")) },
         { name: "changed", get: async () => ({ total: 1 }) },
-        { name: "mirror", get: async () => snapshot },
+        { name: "snapshot", get: async () => at("2026-10-01T00:00:00Z") },
+        { name: "mirror", get: async () => at("2026-10-17T21:00:00Z") },
       ],
       (m) => warnings.push(m),
     );
     expect(got.source).toBe("mirror");
     expect(warnings).toHaveLength(2);
-    expect(warnings[0]).toBe("down: timeout");
+    expect(warnings[0]).toBe("live: timeout");
   });
 
   it("throws when no source answers", async () => {
-    await expect(resolveStats([{ name: "down", get: async () => null }], () => {})).rejects.toThrow(
-      /no experiment-stats source/,
-    );
+    await expect(
+      resolveStats({ name: "down", get: async () => null }, [], () => {}),
+    ).rejects.toThrow(/no experiment-stats source/);
   });
 });
