@@ -126,6 +126,11 @@ const projects = projectEntries
   .sort((a, b) => a.data.order - b.data.order)
   .map((entry) => ({ ...entry.data, id: entry.id }));
 
+// Projects with an experiment database get a run count on their card.
+const experimentTotals = new Map(
+  (await getCollection("experimentStats")).map((s) => [s.id, s.data.total_experiments]),
+);
+
 // Lookup for the optional publication → project "Code" cross-link below.
 const projectNamesById = new Map(projectEntries.map((p) => [p.id, p.data.name]));
 
@@ -304,6 +309,17 @@ const pastCohort = peopleEntries
               </div>
               <div class="mb-4 text-sm text-text-dim italic">{p.tagline}</div>
               <p class="mb-6 flex-grow text-[15px] text-text-dim" set:html={p.desc} />
+              {experimentTotals.has(p.id) && (
+                <a
+                  href={`${import.meta.env.BASE_URL.replace(/\/$/, "")}/projects/${p.id}/#experiments`}
+                  class="mb-6 self-start text-sm text-text hover:text-rit-orange-text"
+                >
+                  <span style="font-family: var(--font-display); font-size: 22px;">
+                    {experimentTotals.get(p.id)!.toLocaleString("en-US")}
+                  </span>{" "}
+                  experiments run so far<span class="sr-only"> with {p.name}</span>
+                </a>
+              )}
               <div class="flex flex-wrap gap-[14px] border-t border-line pt-[18px] text-[13px]">
                 {p.links.map((l) => (
                   <a

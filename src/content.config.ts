@@ -15,6 +15,14 @@
 import { glob } from "astro/loaders";
 import { defineCollection, reference } from "astro:content";
 import { z } from "astro/zod";
+import {
+  STATS_ENDPOINT,
+  STATS_MIRROR,
+  experimentStatsSchema,
+  fetchJson,
+  resolveStats,
+} from "./lib/experiment-stats";
+import statsSnapshot from "./data/intefl-experiments.json";
 
 // Sveltia writes "" for a cleared optional field, which would fail the .url() /
 // .regex() refinements below and block the build. Treat a blank string as absent
@@ -175,4 +183,33 @@ const news = defineCollection({
   }),
 });
 
-export const collections = { projects, publications, people, news };
+// research(2026-10): Astro ships no remote loader, so this is an object loader (it gets
+// `logger` + `parseData`, which an inline loader does not). The data store only changes at
+// build time; .github/workflows/refresh-stats.yml redeploys hourly when the stats change.
+// InteFL's live endpoint wins; if it is down, the newer of the copy this site last deployed
+// and the committed snapshot (so an offline build still works) is used.
+// Entry ids are project ids: projects/[id].astro renders the stats on that project's page.
+// Source: https://docs.astro.build/en/reference/content-loader-reference/
+const experimentStats = defineCollection({
+  loader: {
+    name: "intefl-experiment-stats",
+    load: async ({ store, logger, parseData }) => {
+      const { stats, source } = await resolveStats(
+        { name: STATS_ENDPOINT, get: fetchJson(STATS_ENDPOINT) },
+        [
+          // Pages' CDN caches this copy for up to 10 minutes and ignores query strings, so
+          // within 10 minutes of a deploy it can be one deploy behind.
+          { name: STATS_MIRROR, get: fetchJson(STATS_MIRROR) },
+          { name: "src/data/intefl-experiments.json", get: async () => statsSnapshot },
+        ],
+        (msg) => logger.warn(msg),
+      );
+      logger.info(`InteFL stats from ${source} (generated ${stats.generated_at})`);
+      store.clear();
+      store.set({ id: "intefl", data: await parseData({ id: "intefl", data: stats }) });
+    },
+  },
+  schema: experimentStatsSchema,
+});
+
+export const collections = { projects, publications, people, news, experimentStats };

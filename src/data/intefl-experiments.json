@@ -1,0 +1,250 @@
+{
+  "total_experiments": 2462,
+  "successful_experiments": 2432,
+  "total_hours": 165.16,
+  "latest_experiment": {
+    "id": 2472,
+    "created_at": "2026-10-16T22:08:05Z",
+    "dataset": "femnist_iid",
+    "strategy": "pid_made"
+  },
+  "experiments_per_week": [
+    {
+      "week_start": "2026-03-02",
+      "count": 6
+    },
+    {
+      "week_start": "2026-03-09",
+      "count": 12
+    },
+    {
+      "week_start": "2026-03-16",
+      "count": 75
+    },
+    {
+      "week_start": "2026-03-23",
+      "count": 258
+    },
+    {
+      "week_start": "2026-03-30",
+      "count": 95
+    },
+    {
+      "week_start": "2026-04-06",
+      "count": 585
+    },
+    {
+      "week_start": "2026-04-13",
+      "count": 333
+    },
+    {
+      "week_start": "2026-04-20",
+      "count": 186
+    },
+    {
+      "week_start": "2026-04-27",
+      "count": 183
+    },
+    {
+      "week_start": "2026-05-04",
+      "count": 70
+    },
+    {
+      "week_start": "2026-05-11",
+      "count": 0
+    },
+    {
+      "week_start": "2026-05-18",
+      "count": 0
+    },
+    {
+      "week_start": "2026-05-25",
+      "count": 0
+    },
+    {
+      "week_start": "2026-06-01",
+      "count": 0
+    },
+    {
+      "week_start": "2026-06-08",
+      "count": 0
+    },
+    {
+      "week_start": "2026-06-15",
+      "count": 0
+    },
+    {
+      "week_start": "2026-06-22",
+      "count": 23
+    },
+    {
+      "week_start": "2026-06-29",
+      "count": 125
+    },
+    {
+      "week_start": "2026-07-06",
+      "count": 0
+    },
+    {
+      "week_start": "2026-07-13",
+      "count": 56
+    },
+    {
+      "week_start": "2026-07-20",
+      "count": 0
+    },
+    {
+      "week_start": "2026-07-27",
+      "count": 1
+    },
+    {
+      "week_start": "2026-08-03",
+      "count": 0
+    },
+    {
+      "week_start": "2026-08-10",
+      "count": 0
+    },
+    {
+      "week_start": "2026-08-17",
+      "count": 0
+    },
+    {
+      "week_start": "2026-08-24",
+      "count": 0
+    },
+    {
+      "week_start": "2026-08-31",
+      "count": 39
+    },
+    {
+      "week_start": "2026-09-07",
+      "count": 7
+    },
+    {
+      "week_start": "2026-09-14",
+      "count": 6
+    },
+    {
+      "week_start": "2026-09-21",
+      "count": 32
+    },
+    {
+      "week_start": "2026-09-28",
+      "count": 304
+    },
+    {
+      "week_start": "2026-10-05",
+      "count": 54
+    },
+    {
+      "week_start": "2026-10-12",
+      "count": 12
+    }
+  ],
+  "experiments_per_dataset": [
+    {
+      "name": "femnist_iid",
+      "count": 838
+    },
+    {
+      "name": "smores",
+      "count": 467
+    },
+    {
+      "name": "air_quality_uci",
+      "count": 394
+    },
+    {
+      "name": "femnist_niid",
+      "count": 345
+    },
+    {
+      "name": "cifar10_iid",
+      "count": 84
+    },
+    {
+      "name": "cifar100_a01",
+      "count": 64
+    },
+    {
+      "name": "cifar100_a20",
+      "count": 60
+    },
+    {
+      "name": "cifar100_a05",
+      "count": 59
+    },
+    {
+      "name": "cifar100_iid",
+      "count": 57
+    },
+    {
+      "name": "cifar10_a05",
+      "count": 24
+    },
+    {
+      "name": "cifar10_a01",
+      "count": 19
+    },
+    {
+      "name": "cifar10_a20",
+      "count": 14
+    },
+    {
+      "name": "pneumoniamnist",
+      "count": 14
+    },
+    {
+      "name": "cifar10_niid",
+      "count": 10
+    },
+    {
+      "name": "bloodmnist",
+      "count": 9
+    },
+    {
+      "name": "octmnist",
+      "count": 2
+    },
+    {
+      "name": "cifar100_a50",
+      "count": 1
+    },
+    {
+      "name": "lung_photos",
+      "count": 1
+    }
+  ],
+  "experiments_per_attack": [
+    {
+      "name": "label_flipping",
+      "count": 1021
+    },
+    {
+      "name": "target_flipping",
+      "count": 664
+    },
+    {
+      "name": "none",
+      "count": 287
+    },
+    {
+      "name": "gradient_scaling",
+      "count": 260
+    },
+    {
+      "name": "gaussian_noise",
+      "count": 184
+    },
+    {
+      "name": "little_is_enough",
+      "count": 156
+    },
+    {
+      "name": "threshold_evasion",
+      "count": 6
+    }
+  ],
+  "generated_at": "2026-10-17T21:05:21Z"
+}
