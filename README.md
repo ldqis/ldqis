@@ -37,7 +37,8 @@ Every person, project, and publication renders to a stable per-page URL you can 
 ```
 src/
 ├── content/            # the editorial surface: people, projects, publications, news
-├── content.config.ts   # collection schemas
+├── content.config.ts   # collection schemas, plus the InteFL experiment-stats loader
+├── lib/                # pure helpers (citations, publications, experiment stats), unit-tested
 ├── layouts/            # base layout: head, theme, skip-link
 ├── pages/              # routes, per-entry detail pages, and the news RSS endpoint
 └── styles/global.css   # Tailwind 4 @theme tokens (RIT palette)

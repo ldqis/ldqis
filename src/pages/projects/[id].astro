@@ -2,7 +2,9 @@
 import { type GetStaticPaths } from "astro";
 import { getCollection, getEntries } from "astro:content";
 import BaseLayout from "../../layouts/BaseLayout.astro";
+import ExperimentStats from "../../components/ExperimentStats.astro";
 import Nav from "../../components/Nav.astro";
+import { summarize } from "../../lib/experiment-stats";
 
 // research(2026-05): Astro's dynamic-route IDs come from filenames via
 // `glob({ pattern })` — no reserved `slug` field anymore. `entry.id` is
@@ -24,6 +26,8 @@ const { name, tagline, tags, stack, desc, links, contributors } = entry.data;
 // doesn't resolve, so a typo can't silently render a broken card.
 const contributorEntries = contributors.length ? await getEntries(contributors) : [];
 const baseUrl = import.meta.env.BASE_URL.replace(/\/$/, "");
+// Projects with a public experiment database (an experimentStats entry under the same id).
+const stats = (await getCollection("experimentStats")).find((s) => s.id === entry.id);
 ---
 
 <BaseLayout
@@ -70,6 +74,13 @@ const baseUrl = import.meta.env.BASE_URL.replace(/\/$/, "");
           </a>
         ))}
       </div>
+
+      {stats && (
+        <ExperimentStats
+          view={summarize(stats.data)}
+          dataHref={`${baseUrl}/data/${entry.id}-experiments.json`}
+        />
+      )}
 
       {contributorEntries.length > 0 && (
         <section class="mt-12 border-t border-line pt-8" aria-labelledby="contributors-heading">

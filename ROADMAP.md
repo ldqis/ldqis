@@ -86,6 +86,16 @@ ideas. These were weighed and declined, recorded so they aren't re-proposed:
 
 Highlights below; full history in git.
 
+- **2026-10-17: InteFL experiment record.** The InteFL project page shows the lab's experiment
+  database: a one-line summary, a weekly chart that reads out by pointer or keyboard, and what
+  the runs covered (attacks by family, datasets by domain and partition). The homepage card
+  carries the run count. Built at deploy from InteFL's public endpoint, rebuilt hourly when the
+  numbers change, so it ships as static HTML with a small script for the chart. research(2026-10):
+  bars, not a line, for bursty weekly counts, with zero weeks kept visible; a real table and
+  text-bearing lists stand in for the chart for assistive tech. Sources:
+  datadoghq.com/blog/timeseries-metric-graphs-101,
+  sarasoueidan.com/blog/accessible-data-charts-for-khan-academy-2018-annual-report.
+
 - **2026-10-16: Moved to the ldqis org and dataqualitylabs.com.** The repo lives in the lab-owned
   `ldqis` organization and the site builds only for <https://dataqualitylabs.com/>. DNS and the
   domain are described in [MAINTAINING.md](./MAINTAINING.md).

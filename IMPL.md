@@ -10,6 +10,9 @@ Nothing in flight. The site moved to the `ldqis` org and to `dataqualitylabs.com
 
 ## Known issues
 
+- The homepage's Lighthouse CLS is about 0.10 to 0.11 (performance 0.97) on `main` as well; it
+  clears the 0.95 gate but is the one score short of perfect.
+
 - `npm audit --omit=dev` is clean. The dev-only findings are the `@lhci/cli` chain (0.15.1 is
   its latest release and no longer updated) and `@tailwindcss/typography` through
   `postcss-selector-parser`; `npm audit fix --force` would downgrade `@lhci/cli` and

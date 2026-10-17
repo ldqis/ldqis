@@ -12,6 +12,7 @@ next maintainer.
 | GitHub OAuth App                | Client ID in the Worker's `wrangler.toml`; client secret stored as a Worker secret              | The app's owner              |
 | CMS publisher GitHub App        | Repo variable `CMS_APP_ID`, repo secret `CMS_APP_PRIVATE_KEY`                                   | The app's owner              |
 | `dataqualitylabs.com`           | GoDaddy (registration and DNS); renews every February 12                                        | Dr. Reznik (GoDaddy account) |
+| InteFL experiment stats         | `https://gcis-lrvcs-rl.gccis.rit.edu/public/stats`, served by InteFL's experiment database      | Dmitrii Korobeinikov         |
 
 ## Domain and DNS
 
@@ -54,6 +55,23 @@ change; rebuild to refresh). With no build, the header search button hides itsel
 Pages are indexed through `data-pagefind-body` on `<body>` in `BaseLayout`; pass
 `indexed={false}` to keep a page out, and put `data-pagefind-ignore` on listings or controls
 that shouldn't match queries. Result titles come from each page's `og:title`.
+
+## Experiment stats
+
+The InteFL project page and its homepage card show the lab's experiment counts. The build
+fetches them (the `experimentStats` collection in `src/content.config.ts`) from InteFL's
+public endpoint, so they are static HTML, and serves the copy it rendered at
+`/data/intefl-experiments.json`. If the endpoint is down, the build falls back to that
+deployed copy, then to the committed snapshot `src/data/intefl-experiments.json`, so an
+outage never rolls the numbers back or breaks a deploy.
+
+`deploy.yml` also runs hourly. It compares the live stats with the deployed copy and rebuilds
+only when they differ. GitHub turns off scheduled workflows in a public repository after 60
+days without activity; if the counts stop moving, re-enable the workflow under Actions.
+
+Labels for datasets, attacks and strategies live in `src/lib/experiment-stats.ts`. A keyword
+it does not know shows as the raw keyword, so a new one never breaks the build; add its label
+there when it appears.
 
 ## Updating the CMS bundle
 

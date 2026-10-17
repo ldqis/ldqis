@@ -11,6 +11,9 @@ on:
   push:
     branches: [main]
   workflow_dispatch:
+  # The InteFL experiment stats are fetched at build time; this rebuilds when they change.
+  schedule:
+    - cron: "23 * * * *"
 
 concurrency:
   group: pages
@@ -20,7 +23,39 @@ permissions:
   contents: read
 
 jobs:
+  # Scheduled runs only: compare InteFL's live stats with the copy the site last deployed,
+  # ignoring the timestamp the endpoint stamps on every response. If the endpoint is down the
+  # run leaves a warning and skips the build, rather than failing every hour until it is back.
+  stats-changed:
+    if: github.event_name == 'schedule'
+    runs-on: ubuntu-latest
+    outputs:
+      changed: ${{ steps.diff.outputs.changed }}
+    steps:
+      - name: Compare live stats with the deployed copy
+        id: diff
+        env:
+          LIVE: https://gcis-lrvcs-rl.gccis.rit.edu/public/stats
+          DEPLOYED: https://dataqualitylabs.com/data/intefl-experiments.json
+        run: |
+          if ! live=$(curl -fsS --max-time 30 "$LIVE" | jq -S 'del(.generated_at)'); then
+            echo "::warning::InteFL stats endpoint unreachable; skipping the rebuild"
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          deployed=$(curl -fsS --max-time 30 "$DEPLOYED" | jq -S 'del(.generated_at)' || true)
+          if [ "$live" = "$deployed" ]; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+          fi
+
   build:
+    needs: stats-changed
+    # Pushes and manual runs always build (stats-changed is skipped for them).
+    if: >-
+      !cancelled()
+      && (github.event_name != 'schedule' || needs.stats-changed.outputs.changed == 'true')
     runs-on: ubuntu-latest
     steps:
       - name: Checkout

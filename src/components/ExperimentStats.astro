@@ -1,0 +1,380 @@
+---
+// A project's experiment record: a one-sentence summary, the weekly chart, and what the
+// runs covered. Rendered at build time from the experimentStats collection, so it works
+// without JavaScript; the script only adds pointer and keyboard reading of the chart.
+//
+// research(2026-10): weekly counts are bars, never a line, because a line interpolates
+// across the idle weeks; zero weeks keep a visible stub so the gaps read as gaps. The chart
+// is hidden from assistive tech and duplicated as a real table, and every breakdown is a
+// list whose text carries the number, the pattern accessible-chart guidance recommends
+// over ARIA-annotated SVG. Sources: datadoghq.com/blog/timeseries-metric-graphs-101,
+// sarasoueidan.com/blog/accessible-data-charts-for-khan-academy-2018-annual-report
+import type { StatsView } from "../lib/experiment-stats";
+
+interface Props {
+  view: StatsView;
+  dataHref: string;
+}
+
+const { view, dataHref } = Astro.props;
+const fmt = (n: number) => n.toLocaleString("en-US");
+const plural = (n: number) => `${fmt(n)} experiment${n === 1 ? "" : "s"}`;
+const weekMax = Math.max(1, ...view.weeks.map((w) => w.count));
+const peakIndex = view.peak ? view.weeks.indexOf(view.peak) : -1;
+const peakText = view.peak
+  ? `Busiest week: ${view.peak.label}, ${plural(view.peak.count)}`
+  : "No experiments recorded yet";
+const updated = new Intl.DateTimeFormat("en-US", {
+  month: "short",
+  day: "numeric",
+  year: "numeric",
+  hour: "numeric",
+  minute: "2-digit",
+  timeZone: "America/New_York",
+  timeZoneName: "short",
+}).format(new Date(view.generatedAt));
+const hasAlpha = view.datasets.some((g) => g.rows.some((r) => r.detail?.includes("α")));
+const panels = [
+  { id: "attacks", title: "Attacks tested", groups: view.attacks, max: view.attackMax },
+  { id: "datasets", title: "Datasets", groups: view.datasets, max: view.datasetMax },
+];
+---
+
+<section
+  id="experiments"
+  class="mt-12 border-t border-line pt-8"
+  aria-labelledby="experiments-heading"
+>
+  <h2 id="experiments-heading" class="mb-6 text-xs tracking-[1.5px] text-text-faint uppercase">
+    Experiments
+  </h2>
+
+  <p class="lede">
+    {fmt(view.total)} experiments{view.since && ` since ${view.since}`}. {fmt(view.successful)} ran
+    to completion, using {fmt(Math.round(view.hours))} hours of compute.
+  </p>
+  {view.latest && (
+    <p class="mt-3 text-text-dim">
+      Latest run: {view.latest.strategy} on {view.latest.dataset}, {view.latest.day}.
+    </p>
+  )}
+
+  <figure class="mt-10">
+    <figcaption class="flex flex-wrap items-baseline justify-between gap-x-6 gap-y-1">
+      <span class="text-sm font-medium text-text">Experiments per week</span>
+      <span id="experiments-readout" class="readout text-sm text-text-dim" aria-live="polite">
+        {peakText}
+      </span>
+    </figcaption>
+
+    <div
+      class="chart"
+      role="group"
+      tabindex="0"
+      aria-roledescription="chart"
+      aria-label="Experiments per week. Use the left and right arrow keys to read each week."
+      aria-describedby="experiments-readout"
+      data-chart
+      data-peak={peakText}
+      data-peak-index={peakIndex}
+      style={`--n: ${view.weeks.length}`}
+    >
+      <ol class="bars" aria-hidden="true">
+        {view.weeks.map((w, i) => (
+          <li
+            class:list={[w.count === 0 && "zero"]}
+            style={`--h: ${w.count / weekMax}; --i: ${i}`}
+            data-label={w.label}
+            data-count={w.count}
+          />
+        ))}
+      </ol>
+      {view.peak && (
+        <div class="marks" aria-hidden="true">
+          <span style={`grid-column: ${peakIndex + 1}; --h: ${view.peak.count / weekMax}`}>
+            {fmt(view.peak.count)}
+          </span>
+        </div>
+      )}
+      <div class="axis" aria-hidden="true">
+        {view.weeks.map((w, i) => w.tick && <span style={`grid-column: ${i + 1}`}>{w.tick}</span>)}
+      </div>
+    </div>
+
+    <details class="mt-4 text-sm">
+      <summary class="cursor-pointer text-text-dim hover:text-rit-orange-text">
+        Show the weekly counts as a table
+      </summary>
+      <table class="mt-3 w-full max-w-[360px] text-left">
+        <caption class="sr-only">Experiments per week</caption>
+        <thead>
+          <tr>
+            <th scope="col" class="py-1 font-medium">
+              Week of
+            </th>
+            <th scope="col" class="py-1 text-right font-medium">
+              Experiments
+            </th>
+          </tr>
+        </thead>
+        <tbody>
+          {view.weeks.map((w) => (
+            <tr class="border-t border-line">
+              <td class="py-1 text-text-dim">{w.label}</td>
+              <td class="py-1 text-right tabular-nums">{fmt(w.count)}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </details>
+  </figure>
+
+  <div class="mt-14 grid grid-cols-1 gap-x-12 gap-y-14 md:grid-cols-2">
+    {panels.map((panel) => (
+      <section aria-labelledby={`${panel.id}-heading`}>
+        <h3 id={`${panel.id}-heading`} class="mb-6 text-lg font-medium text-text">
+          {panel.title}
+        </h3>
+        {panel.groups.map((g) => (
+          <div class="mb-8 last:mb-0">
+            <h4 class="text-sm font-medium text-text-dim">{g.label}</h4>
+            {g.note && <p class="text-sm text-text-faint">{g.note}</p>}
+            <ul class="mt-3 space-y-3" role="list">
+              {g.rows.map((r) => (
+                <li class="row">
+                  <span class="text-[15px] text-text">
+                    {r.label}
+                    {r.detail && <span class="block text-[13px] text-text-faint">{r.detail}</span>}
+                  </span>
+                  <span class="text-[15px] text-text tabular-nums">{fmt(r.count)}</span>
+                  <span
+                    class="meter"
+                    aria-hidden="true"
+                    style={`--w: ${r.count / Math.max(1, panel.max)}`}
+                  />
+                </li>
+              ))}
+            </ul>
+          </div>
+        ))}
+        {panel.id === "datasets" && hasAlpha && (
+          <p class="mt-6 text-[13px] text-text-faint">
+            α is the Dirichlet concentration used to split a dataset across clients. A smaller α
+            gives each client a more uneven mix of classes.
+          </p>
+        )}
+      </section>
+    ))}
+  </div>
+
+  <p class="mt-12 text-[13px] text-text-faint">
+    From InteFL's experiment database, checked every hour. Last updated {updated}.{" "}
+    <a href={dataHref} class="underline hover:text-rit-orange-text">
+      Get the data as JSON
+    </a>
+  </p>
+</section>
+
+<style>
+  .lede {
+    font-family: var(--font-display);
+    font-size: clamp(28px, 4.2vw, 40px);
+    line-height: 1.18;
+    letter-spacing: -0.4px;
+    color: var(--color-text);
+    font-variant-numeric: lining-nums;
+    text-wrap: pretty;
+    max-width: 30ch;
+  }
+
+  .readout {
+    font-variant-numeric: tabular-nums;
+  }
+
+  .chart {
+    --chart-h: clamp(140px, 22vw, 200px);
+    --gap: clamp(1px, 0.45vw, 4px);
+    position: relative;
+    margin-top: 1rem;
+    border-radius: 10px;
+    touch-action: pan-y;
+    cursor: crosshair;
+  }
+  .chart:focus-visible {
+    outline: 2px solid var(--color-rit-orange-text);
+    outline-offset: 8px;
+  }
+
+  .bars,
+  .marks,
+  .axis {
+    display: grid;
+    grid-template-columns: repeat(var(--n), minmax(0, 1fr));
+    column-gap: var(--gap);
+  }
+
+  /* Each week is a full-height column; its bar is the ::after, topping out at 88% so the
+     peak label has headroom. The column itself tints when its week is selected. */
+  .bars {
+    height: var(--chart-h);
+    border-bottom: 1px solid var(--color-text-faint);
+    view-timeline-name: --bars;
+  }
+  .bars li {
+    position: relative;
+    border-radius: 3px 3px 0 0;
+  }
+  .bars li::after {
+    content: "";
+    position: absolute;
+    inset: auto 0 0;
+    height: max(2px, calc(var(--h) * 88%));
+    background: var(--color-rit-orange-text);
+    border-radius: 2px 2px 0 0;
+    transform-origin: bottom;
+    transition: opacity 120ms ease;
+  }
+  .bars li.zero::after {
+    background: var(--color-line);
+  }
+  .bars li[data-active] {
+    background: color-mix(in oklab, var(--color-text) 7%, transparent);
+  }
+  .chart[data-reading] .bars li:not([data-active])::after {
+    opacity: 0.32;
+  }
+  .bars li[data-active].zero::after {
+    background: var(--color-text-faint);
+  }
+
+  .marks {
+    position: absolute;
+    inset: 0 0 auto;
+    height: var(--chart-h);
+    align-items: end;
+    pointer-events: none;
+  }
+  .marks span {
+    justify-self: center;
+    transform: translateY(calc(var(--h) * var(--chart-h) * -0.88 - 4px));
+    font-size: 12px;
+    font-variant-numeric: tabular-nums;
+    color: var(--color-text-dim);
+    white-space: nowrap;
+    transition: opacity 120ms ease;
+  }
+  .chart[data-reading] .marks span {
+    opacity: 0;
+  }
+
+  .axis {
+    margin-top: 8px;
+    font-size: 12px;
+    color: var(--color-text-faint);
+  }
+  .axis span {
+    grid-row: 1;
+    white-space: nowrap;
+  }
+
+  .row {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    column-gap: 1rem;
+    row-gap: 6px;
+    align-items: baseline;
+  }
+  .meter {
+    grid-column: 1 / -1;
+    height: 6px;
+    border-radius: 3px;
+    background: var(--color-bg-soft);
+    position: relative;
+    overflow: hidden;
+  }
+  .meter::after {
+    content: "";
+    position: absolute;
+    inset: 0 auto 0 0;
+    width: max(3px, calc(var(--w) * 100%));
+    border-radius: inherit;
+    background: var(--color-rit-orange-text);
+  }
+
+  /* One reveal: the weekly bars rise as the chart scrolls into view. Browsers without
+     scroll-driven animations, and anyone who asks for reduced motion, see them at rest. */
+  @media (prefers-reduced-motion: no-preference) {
+    @supports (animation-timeline: view()) {
+      .bars li::after {
+        animation: rise linear both;
+        animation-timeline: --bars;
+        animation-range: entry calc(var(--i) * 0.6%) cover calc(30% + var(--i) * 0.6%);
+      }
+    }
+  }
+  @keyframes rise {
+    from {
+      transform: scaleY(0);
+    }
+  }
+</style>
+
+<script>
+  // Read the weekly chart by pointer (hover, or drag on touch) and by keyboard (arrow keys,
+  // Home, End, Escape). The readout shows the week under the pointer or selection and
+  // falls back to the busiest week.
+  for (const chart of document.querySelectorAll<HTMLElement>("[data-chart]")) {
+    const list = chart.querySelector<HTMLOListElement>(".bars");
+    const readout = document.getElementById(chart.getAttribute("aria-describedby") ?? "");
+    if (!list || !readout) continue;
+    const bars = [...list.children] as HTMLElement[];
+    const peak = Number(chart.dataset.peakIndex ?? -1);
+    let active = -1;
+
+    const describe = (bar: HTMLElement) => {
+      const n = Number(bar.dataset.count);
+      const runs =
+        n === 0 ? "no experiments" : `${n.toLocaleString("en-US")} experiment${n === 1 ? "" : "s"}`;
+      return `Week of ${bar.dataset.label}: ${runs}`;
+    };
+
+    const select = (i: number) => {
+      if (i === active) return;
+      bars[active]?.removeAttribute("data-active");
+      active = i;
+      bars[i]?.setAttribute("data-active", "");
+      chart.toggleAttribute("data-reading", i >= 0);
+      readout.textContent = i >= 0 ? describe(bars[i]) : (chart.dataset.peak ?? "");
+    };
+
+    const indexAt = (x: number) => {
+      const r = list.getBoundingClientRect();
+      const i = Math.floor(((x - r.left) / r.width) * bars.length);
+      return Math.min(bars.length - 1, Math.max(0, i));
+    };
+
+    chart.addEventListener("pointermove", (e) => select(indexAt(e.clientX)));
+    chart.addEventListener("pointerdown", (e) => select(indexAt(e.clientX)));
+    chart.addEventListener("pointerleave", () => {
+      if (document.activeElement !== chart) select(-1);
+    });
+    chart.addEventListener("focus", () => select(active >= 0 ? active : Math.max(peak, 0)));
+    chart.addEventListener("blur", () => select(-1));
+    chart.addEventListener("keydown", (e) => {
+      const last = bars.length - 1;
+      const from = active >= 0 ? active : Math.max(peak, 0);
+      const next = {
+        ArrowLeft: Math.max(0, from - 1),
+        ArrowRight: Math.min(last, from + 1),
+        Home: 0,
+        End: last,
+      }[e.key];
+      if (next !== undefined) {
+        e.preventDefault();
+        select(next);
+      } else if (e.key === "Escape") {
+        select(-1);
+      }
+    });
+  }
+</script>
