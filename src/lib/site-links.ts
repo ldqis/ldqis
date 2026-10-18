@@ -22,17 +22,24 @@ export function primaryLinks(baseUrl: string) {
 /** Footer link columns. Absolute paths, so they work off the homepage; no two go to the same place. */
 export function footerGroups(baseUrl: string) {
   const base = basePath(baseUrl);
+  // The header already carries the primary sections, so the footer holds only what it lacks.
   return [
-    { heading: "Explore", links: primaryLinks(baseUrl) },
     {
-      heading: "Lab",
+      heading: "The lab",
       links: [
         { href: `${base}/#funding`, label: "Funded by" },
         { href: `${base}/#alumni`, label: "Alumni" },
         { href: `${base}/#teaching`, label: "Teaching" },
         { href: `mailto:${CONTACT_EMAIL}?subject=Joining%20LDQIS`, label: "Join us" },
         { href: `mailto:${CONTACT_EMAIL}`, label: "Get in touch" },
+      ],
+    },
+    {
+      heading: "Elsewhere",
+      links: [
         { href: SCHOLAR_URL, label: "Dr. Reznik on Google Scholar" },
+        { href: "https://github.com/ldqis/ldqis", label: "Site source on GitHub" },
+        { href: `${base}/news/rss.xml`, label: "RSS feed" },
       ],
     },
   ];
