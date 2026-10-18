@@ -162,8 +162,15 @@ const people = defineCollection({
       // `avatar: ./avatars/your-name.jpg`. Astro optimizes it. Falls back to the
       // GitHub avatar (if `github` set), then initials.
       avatar: image().optional(),
-      // Years in the lab, e.g. "2018–2022" or "2021" (handy for alumni).
-      years: z.string().optional(),
+      // Years in the lab, e.g. "2018–2022", "2021" or "2020–present". A bare count like "5"
+      // reads as a stray number on the card, so a four-digit year is required.
+      years: z
+        .string()
+        .regex(
+          /^$|\b(19|20)\d{2}\b/,
+          'Years in the lab needs a year, e.g. "2018–2022" or "2020–present"',
+        )
+        .optional(),
       cohort: z.enum(["current", "past"]),
       lead: z.boolean().optional(),
       order: z.number().int().nonnegative(),

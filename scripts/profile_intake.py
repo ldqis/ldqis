@@ -42,7 +42,7 @@ STRING_FIELDS: list[tuple[str, "re.Pattern[str] | None"]] = [
     ("orcid", re.compile(r"^\d{4}-\d{4}-\d{4}-\d{3}[\dX]$")),
     ("scholar", re.compile(r"^https://scholar\.google\.com/")),
     ("ieee", re.compile(r"^https://ieeexplore\.ieee\.org/")),
-    ("years", None),  # free text
+    ("years", re.compile(r".*\b(19|20)\d{2}\b")),  # a year or range, not a count
 ]
 
 # "Remove fields" checkbox labels (profile.yml) → the card field each one clears.
