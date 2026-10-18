@@ -1,0 +1,60 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import Nav from "../../components/Nav.astro";
+import PersonCard from "../../components/PersonCard.astro";
+import AlumniList from "../../components/AlumniList.astro";
+import Subhead from "../../components/Subhead.astro";
+import { basePath } from "../../lib/site-links";
+import { loadPeople } from "../../lib/people";
+
+const baseUrl = basePath(import.meta.env.BASE_URL);
+const { current, alumni } = await loadPeople();
+---
+
+<BaseLayout
+  title="People · LDQIS"
+  description={`The current team and ${alumni.length} past researchers of the Laboratory of Data Quality and Intelligent Security at RIT.`}
+>
+  <Nav back={{ href: `${baseUrl}/#people`, label: "← Home" }} />
+
+  <main id="main" class="relative z-[1] pt-16 pb-32">
+    <div class="mx-auto max-w-[1200px] px-6">
+      <p class="mb-4 text-sm font-medium text-rit-orange-text">People</p>
+      <h1
+        class="mb-6"
+        style="font-family: var(--font-display); font-size: clamp(36px, 5vw, 56px); line-height: 1.05; letter-spacing: -1px;"
+      >
+        Everyone who has built the lab.
+      </h1>
+      <p class="mb-14 max-w-[64ch] text-lg text-text-dim">
+        LDQIS is the work of every researcher who has passed through it. Each name links to that
+        person's research, publications, and projects.
+      </p>
+
+      <section aria-labelledby="current" class="mb-20">
+        <Subhead as="h2" id="current" size={36} class="mb-2">
+          Current team
+        </Subhead>
+        <p class="mb-8 text-text-dim">Working on federated learning and agentic AI.</p>
+        <div class="grid grid-cols-1 gap-x-10 sm:grid-cols-2 md:grid-cols-4">
+          {current.map((p) => (
+            <PersonCard p={p} />
+          ))}
+        </div>
+      </section>
+
+      <section aria-labelledby="alumni">
+        <Subhead as="h2" id="alumni" size={36} class="mb-2">
+          Past researchers
+        </Subhead>
+        <p class="mb-8 max-w-[64ch] text-text-dim">
+          These researchers led work that remains foundational to LDQIS today, including our Android
+          security apps, the NSF Data Quality &amp; Security Evaluation Framework, and the
+          wearable-sensors and computational-intelligence research lines that preceded today's
+          federated learning work.
+        </p>
+        <AlumniList people={alumni} />
+      </section>
+    </div>
+  </main>
+</BaseLayout>

@@ -14,7 +14,7 @@ export function primaryLinks(baseUrl: string) {
     { href: `${base}/#research`, label: "Research" },
     { href: `${base}/#projects`, label: "Projects" },
     { href: `${base}/#publications`, label: "Publications" },
-    { href: `${base}/#people`, label: "People" },
+    { href: `${base}/people/`, label: "People" },
     { href: `${base}/news/`, label: "News" },
   ];
 }
@@ -28,7 +28,7 @@ export function footerGroups(baseUrl: string) {
       heading: "The lab",
       links: [
         { href: `${base}/#funding`, label: "Funded by" },
-        { href: `${base}/#alumni`, label: "Alumni" },
+        { href: `${base}/people/#alumni`, label: "Alumni" },
         { href: `${base}/#teaching`, label: "Teaching" },
         { href: `mailto:${CONTACT_EMAIL}?subject=Joining%20LDQIS`, label: "Join us" },
         { href: `mailto:${CONTACT_EMAIL}`, label: "Get in touch" },

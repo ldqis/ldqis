@@ -9,6 +9,7 @@ import PersonCard from "../components/PersonCard.astro";
 import HeroPulse from "../components/HeroPulse.astro";
 import ContactLinks from "../components/ContactLinks.astro";
 import { byRecency } from "../lib/publications";
+import { loadPeople } from "../lib/people";
 import { CONTACT_EMAIL, SCHOLAR_URL } from "../lib/site-links";
 import allPubs from "../data/publications-all.json";
 
@@ -141,21 +142,7 @@ const publications = publicationEntries
   .sort(byRecency)
   .map((entry) => ({ ...entry.data, id: entry.id }));
 
-const peopleEntries = await getCollection("people");
-const currentTeam = peopleEntries
-  .filter((entry) => entry.data.cohort === "current")
-  .sort((a, b) => a.data.order - b.data.order)
-  .map((entry) => ({ ...entry.data, id: entry.id }));
-const pastCohort = peopleEntries
-  .filter((entry) => entry.data.cohort === "past")
-  // Alumni sort alphabetically by name (leading honorific ignored), so a new
-  // graduate slots in by name instead of inheriting an arbitrary `order`.
-  .sort((a, b) =>
-    a.data.name
-      .replace(/^(Dr|Prof)\.?\s+/i, "")
-      .localeCompare(b.data.name.replace(/^(Dr|Prof)\.?\s+/i, "")),
-  )
-  .map((entry) => ({ ...entry.data, id: entry.id }));
+const { current: currentTeam, alumni } = await loadPeople();
 ---
 
 <BaseLayout>
@@ -356,54 +343,31 @@ const pastCohort = peopleEntries
       style="background: var(--color-bg-elev); border-top: 1px solid var(--color-line); border-bottom: 1px solid var(--color-line);"
     >
       <div class="mx-auto max-w-[1200px] px-6">
-        <SectionHeader label="People" title="The team, past and present.">
-          LDQIS is the work of every researcher who has passed through it. Today's team is pushing
-          on federated learning and agentic AI; previous cohorts built the foundations in mobile
-          security, data quality evaluation, wearable sensors, and computational intelligence that
-          made today's work possible.
+        <SectionHeader label="People" title="The team behind the work.">
+          Today's team works on federated learning and agentic AI. Earlier cohorts built the
+          foundations in mobile security, data quality evaluation, wearable sensors, and
+          computational intelligence.
         </SectionHeader>
 
-        <Subhead as="h3" size={36} class="mb-2">
-          Current team
-        </Subhead>
-        <p class="mb-8 text-text-dim">Working on federated learning and agentic AI.</p>
         <div class="grid grid-cols-1 gap-x-10 sm:grid-cols-2 md:grid-cols-4">
           {currentTeam.map((p) => (
             <PersonCard p={p} />
           ))}
         </div>
 
-        <Subhead as="h3" id="alumni" size={36} class="mt-16 mb-2">
-          Past research cohort
-        </Subhead>
-        <p class="mb-8 max-w-[64ch] text-text-dim">
-          These researchers led work that remains foundational to LDQIS today, including our Android
-          security apps, the NSF Data Quality &amp; Security Evaluation Framework, and the
-          wearable-sensors and computational-intelligence research lines that preceded today's
-          federated learning work. Their topics ranged from mobile security and Android attacks to
-          wearable sensors, data quality, and computational intelligence.
+        <p class="mt-4 max-w-[64ch] text-text-dim">
+          {alumni.length} past researchers built the lab's earlier work, from our Android security
+          apps to the NSF Data Quality &amp; Security Evaluation Framework.
         </p>
-        {/* A compact text list: past members have no photos, so initials circles added noise,
-            not information. Each name links to the person's page with their full details. */}
-        <ul
-          class="grid grid-cols-1 gap-x-10 border-t border-line sm:grid-cols-2 lg:grid-cols-3"
-          role="list"
-        >
-          {pastCohort.map((p) => (
-            <li class="border-b border-line py-3">
-              <a
-                href={`${import.meta.env.BASE_URL.replace(/\/$/, "")}/people/${p.id}/`}
-                class="text-[15px] font-medium text-text hover:text-rit-orange-text"
-              >
-                {p.name}
-              </a>
-              <p class="text-[13px] text-text-dim">
-                {p.role}
-                {p.years && <span>, {p.years}</span>}
-              </p>
-            </li>
-          ))}
-        </ul>
+        <p class="mt-3">
+          <a
+            href={`${import.meta.env.BASE_URL.replace(/\/$/, "")}/people/`}
+            class="border-b font-medium"
+            style="color: var(--color-rit-orange-text); border-color: color-mix(in oklab, var(--color-rit-orange) 30%, transparent);"
+          >
+            Meet everyone, past and present
+          </a>
+        </p>
       </div>
     </section>
 
