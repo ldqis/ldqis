@@ -83,6 +83,16 @@ ideas. These were weighed and declined, recorded so they aren't re-proposed:
 
 Highlights below; full history in git.
 
+- **2026-10-18: Featured publications, named project groups, and a clearer support path.**
+  Publications take a `featured` flag (CMS-editable); the homepage's "Selected publications"
+  shows only featured entries, chosen from the senior members' strongest recent work (DSN 2026,
+  IEEE TDSC 2025, IEEE Intelligent Systems 2026, ICMLA 2025, and Dr. Reznik's Wiley-IEEE book),
+  and every entry still appears on its authors' pages. The projects section names its two groups,
+  "Research projects" and "Agentic AI tools", and each project card links its page again. The
+  support box splits into Give and Partner paths and shows the email address with a copy button
+  instead of a bare mailto button. research(2026-10): a mailto button hides the address and
+  dead-ends without a desktop mail app. Sources: adamsilver.io, SMU web guidelines.
+
 - **2026-10-18: Lines, not boxes, and a hero built from real data.** Every homepage section
   (research areas, projects, publications, people, teaching, funding) trades rounded, bordered
   cards for hairline rules and whitespace, from shared `SectionHeader`, `ProjectCard`, and

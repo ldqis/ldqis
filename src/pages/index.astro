@@ -6,8 +6,9 @@ import ProjectCard from "../components/ProjectCard.astro";
 import SectionHeader from "../components/SectionHeader.astro";
 import PersonCard from "../components/PersonCard.astro";
 import HeroPulse from "../components/HeroPulse.astro";
+import ContactLinks from "../components/ContactLinks.astro";
 import { byRecency } from "../lib/publications";
-import { SCHOLAR_URL } from "../lib/site-links";
+import { CONTACT_EMAIL, SCHOLAR_URL } from "../lib/site-links";
 import allPubs from "../data/publications-all.json";
 
 // research(2026-05): projects / publications / people live in Astro content
@@ -135,6 +136,7 @@ const projectNamesById = new Map(projectEntries.map((p) => [p.id, p.data.name]))
 
 const publicationEntries = await getCollection("publications");
 const publications = publicationEntries
+  .filter((entry) => entry.data.featured)
   .sort(byRecency)
   .map((entry) => ({ ...entry.data, id: entry.id }));
 
@@ -221,7 +223,7 @@ const pastCohort = peopleEntries
     </header>
 
     {/* RESEARCH AREAS */}
-    <section id="research" class="relative py-[100px]">
+    <section id="research" class="relative py-16 md:py-[100px]">
       <div class="mx-auto max-w-[1200px] px-6">
         <SectionHeader label="Research areas" title="Six frontiers we're pushing in parallel.">
           Our work sits at the intersection of data quality, security, and intelligent systems, with
@@ -244,12 +246,22 @@ const pastCohort = peopleEntries
     </section>
 
     {/* PROJECTS */}
-    <section id="projects" data-pagefind-ignore class="relative py-[100px]">
+    <section id="projects" data-pagefind-ignore class="relative py-16 md:py-[100px]">
       <div class="mx-auto max-w-[1200px] px-6">
         <SectionHeader label="Projects" title="What we're shipping right now.">
           Open-source frameworks, peer-reviewed methods, and end-to-end systems, built by the
           current cohort and used by researchers beyond LDQIS.
         </SectionHeader>
+        <h3
+          class="mb-3 text-text"
+          style="font-family: var(--font-display); font-size: 36px; line-height: 1.1; letter-spacing: -0.5px;"
+        >
+          Research projects
+        </h3>
+        <p class="mb-8 max-w-[64ch] text-text-dim">
+          The software behind the lab's studies: frameworks, testbeds, and experiments with research
+          questions and papers behind them.
+        </p>
         <div class="grid grid-cols-1 gap-x-12 md:grid-cols-2">
           {research.map((p) => (
             <ProjectCard p={p} experimentTotal={experimentTotals.get(p.id)} />
@@ -261,11 +273,11 @@ const pastCohort = peopleEntries
               class="mt-16 mb-3 text-text"
               style="font-family: var(--font-display); font-size: 36px; line-height: 1.1; letter-spacing: -0.5px;"
             >
-              Software
+              Agentic AI tools
             </h3>
             <p class="mb-8 max-w-[64ch] text-text-dim">
-              Tools built in the lab for everyday research and development work, free for anyone to
-              use.
+              Open-source tools for working with AI coding agents such as Claude Code, built for the
+              lab's own research and free for anyone to use.
             </p>
             <div class="grid grid-cols-1 gap-x-12 md:grid-cols-2 lg:grid-cols-3">
               {software.map((p) => (
@@ -278,7 +290,7 @@ const pastCohort = peopleEntries
     </section>
 
     {/* PUBLICATIONS */}
-    <section id="publications" data-pagefind-ignore class="relative py-[100px]">
+    <section id="publications" data-pagefind-ignore class="relative py-16 md:py-[100px]">
       <div class="mx-auto max-w-[1200px] px-6">
         <SectionHeader label="Publications" title="Selected publications.">
           A handful of highlights from the lab's work. See the full publication record below, or Dr.
@@ -348,7 +360,7 @@ const pastCohort = peopleEntries
     <section
       id="people"
       data-pagefind-ignore
-      class="relative py-[100px]"
+      class="relative py-16 md:py-[100px]"
       style="background: var(--color-bg-elev); border-top: 1px solid var(--color-line); border-bottom: 1px solid var(--color-line);"
     >
       <div class="mx-auto max-w-[1200px] px-6">
@@ -395,7 +407,7 @@ const pastCohort = peopleEntries
     </section>
 
     {/* TEACHING */}
-    <section id="teaching" class="relative py-[100px]">
+    <section id="teaching" class="relative py-16 md:py-[100px]">
       <div class="mx-auto max-w-[1200px] px-6">
         <SectionHeader label="Teaching" title="From the lecture hall to the lab.">
           Lab members teach across RIT's undergraduate and graduate computer science curriculum, in
@@ -444,7 +456,7 @@ const pastCohort = peopleEntries
     </section>
 
     {/* FUNDED BY */}
-    <section id="funding" class="relative py-[100px]">
+    <section id="funding" class="relative py-16 md:py-[100px]">
       <div class="mx-auto max-w-[1200px] px-6">
         <SectionHeader label="Funded by" title="Backed by competitive research awards.">
           LDQIS research has been supported by the National Science Foundation, the U.S. Department
@@ -484,10 +496,10 @@ const pastCohort = peopleEntries
     </section>
 
     {/* GET INVOLVED */}
-    <section id="support" class="relative py-[100px]">
+    <section id="support" class="relative py-16 md:py-[100px]">
       <div class="mx-auto max-w-[1200px] px-6">
         <div
-          class="relative overflow-hidden rounded-[14px] border border-line px-12 py-16 text-center"
+          class="relative overflow-hidden rounded-[14px] border border-line px-6 py-14 text-center md:px-12 md:py-16"
           style="background: linear-gradient(135deg, var(--color-bg-soft), var(--color-bg-elev));"
         >
           <div
@@ -502,27 +514,41 @@ const pastCohort = peopleEntries
             >
               Support research that makes data trustworthy.
             </h3>
-            <p class="mx-auto mb-8 max-w-[50ch] text-text-dim">
+            <p class="mx-auto mb-12 max-w-[50ch] text-text-dim">
               Funding from individuals, foundations, and industry partners directly supports
-              graduate stipends, equipment, and open-source releases. Every contribution compounds:
-              in students trained, papers published, and tools shipped.
+              graduate stipends, equipment, and open-source releases.
             </p>
-            <div class="flex flex-wrap justify-center gap-[14px]">
-              <a
-                href="https://www.rit.edu/giving/"
-                target="_blank"
-                rel="noopener"
-                class="inline-flex items-center gap-2 rounded-full px-[22px] py-[14px] text-sm font-medium transition-transform hover:-translate-y-[1px]"
-                style="background: var(--color-rit-orange); color: #0a0e13;"
-              >
-                Become a supporter →
-              </a>
-              <a
-                href="mailto:lrvcs@rit.edu?subject=LDQIS%20Industry%20Partnership"
-                class="inline-flex items-center gap-2 rounded-full border border-line px-[22px] py-[14px] text-sm font-medium hover:border-text-dim"
-              >
-                Partner with us
-              </a>
+            {/* research(2026-10): a mailto button hides the address and dead-ends for anyone
+                without a desktop mail app, so the partner path shows the address with a copy
+                button (the profile pages' email chip) and still opens mail on click. Sources:
+                adamsilver.io "The trouble with mailto email links", SMU web guidelines. */}
+            <div class="mx-auto grid max-w-[880px] grid-cols-1 gap-10 text-left md:grid-cols-2 md:gap-0 md:divide-x md:divide-line">
+              <div class="md:pr-10">
+                <h4 class="mb-2 text-lg font-medium text-text">Give</h4>
+                <p class="mb-5 text-[15px] text-text-dim">
+                  Gifts to the lab are made through RIT. To make sure yours reaches LDQIS, email us
+                  before you give and we will point you to the right designation.
+                </p>
+                <a
+                  href="https://www.rit.edu/giving/"
+                  target="_blank"
+                  rel="noopener"
+                  class="inline-flex items-center rounded-full px-[22px] py-[12px] text-sm font-medium transition-transform hover:-translate-y-[1px]"
+                  style="background: var(--color-rit-orange); color: #0a0e13;"
+                >
+                  Give through RIT ↗<span class="sr-only"> (opens rit.edu in a new tab)</span>
+                </a>
+              </div>
+              <div class="md:pl-10">
+                <h4 class="mb-2 text-lg font-medium text-text">Partner</h4>
+                <p class="mb-5 text-[15px] text-text-dim">
+                  Industry and research partners sponsor projects, students, and open-source
+                  releases. Email Dr. Reznik's lab to start a conversation.
+                </p>
+                <div class="[&>div]:justify-start">
+                  <ContactLinks email={CONTACT_EMAIL} name="LDQIS" variant="pill" />
+                </div>
+              </div>
             </div>
           </div>
         </div>

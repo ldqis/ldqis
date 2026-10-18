@@ -95,6 +95,9 @@ const publications = defineCollection({
     // keeps a cleared CMS field valid; reference() hard-fails the build on a bad
     // project id. The reverse (project → its papers) is intentionally not stored.
     project: blankable(reference("projects")),
+    // Shown under "Selected publications" on the homepage. Every entry still appears on its
+    // authors' pages and has its own page; featuring picks the lab's strongest recent work.
+    featured: z.boolean().default(false),
   }),
 });
 
