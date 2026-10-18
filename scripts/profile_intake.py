@@ -19,6 +19,7 @@ import os
 import re
 import sys
 import urllib.request
+from datetime import datetime, timezone
 from pathlib import Path
 
 PEOPLE = Path("src/content/people")
@@ -37,12 +38,11 @@ STRING_FIELDS: list[tuple[str, "re.Pattern[str] | None"]] = [
     ("email", re.compile(r"^[^@\s]+@[^@\s]+\.[^@\s]+$")),
     ("website", re.compile(r"^https?://")),
     ("github", re.compile(r"^[A-Za-z0-9](?:[A-Za-z0-9-]{0,38})$")),
-    ("linkedin", re.compile(r"^https?://([a-z0-9-]+\.)?linkedin\.com/")),
-    ("youtube", re.compile(r"^https?://([a-z0-9-]+\.)?(youtube\.com|youtu\.be)/")),
+    ("linkedin", re.compile(r"^https://([a-z0-9-]+\.)?linkedin\.com/")),
+    ("youtube", re.compile(r"^https://([a-z0-9-]+\.)?(youtube\.com|youtu\.be)/")),
     ("orcid", re.compile(r"^\d{4}-\d{4}-\d{4}-\d{3}[\dX]$")),
     ("scholar", re.compile(r"^https://scholar\.google\.com/")),
     ("ieee", re.compile(r"^https://ieeexplore\.ieee\.org/")),
-    ("years", re.compile(r".*\b(19|20)\d{2}\b")),  # a year or range, not a count
 ]
 
 # "Remove fields" checkbox labels (profile.yml) → the card field each one clears.
@@ -57,12 +57,32 @@ CLEAR_LABEL_TO_KEY = {
     "ORCID": "orcid",
     "Google Scholar": "scholar",
     "IEEE Xplore": "ieee",
-    "Years in the lab": "years",
+    "Years in the lab": "years_from",  # clears years_to with it
 }
 
 # URL fields where students often paste a bare domain ("abhik-roy.com"); we prepend
 # https:// before validating so a missing protocol doesn't silently drop the link.
 URL_FIELDS = {"website", "linkedin", "youtube", "scholar", "ieee"}
+
+
+# Keep in step with LAB_FIRST_YEAR in src/lib/profile-fields.ts.
+LAB_FIRST_YEAR = 2003
+COHORTS = {"current member": "current", "past member": "past", "current": "current", "past": "past"}
+
+
+def parse_years(text: str, this_year: int) -> tuple[int, int | str | None] | None:
+    """'2018–2022' → (2018, 2022), '2021 to present' → (2021, 'present'), '2019' → (2019, None).
+    None when no year in the lab's span is given, as with a count like '5'."""
+    found = [int(y) for y in re.findall(r"\b(?:19|20)\d{2}\b", text)]
+    if not found or not all(LAB_FIRST_YEAR <= y <= this_year for y in found):
+        return None
+    start = found[0]
+    if re.search(r"present|now|current|today|since", text, re.I):
+        return start, "present"
+    end = found[1] if len(found) > 1 else None
+    if end is not None and end < start:
+        return None
+    return start, end
 
 
 def clean(value: object) -> str | None:
@@ -78,6 +98,21 @@ def slugify(name: str) -> str:
     if not s or "/" in s or ".." in s:
         sys.exit(f"::error::cannot derive a safe slug from name {name!r}")
     return s
+
+
+def card_slug(name: str) -> str:
+    """The existing card whose name matches, ignoring a title, case and spacing, so
+    "Dr. Sergei Chuprov" updates sergei-chuprov.md instead of starting a second card.
+    A new person gets a slug from their name."""
+
+    def key(n: str) -> str:
+        return " ".join(re.sub(r"^(dr|prof)\.?\s+", "", n.strip(), flags=re.I).lower().split())
+
+    for md in sorted(PEOPLE.glob("[!_]*.md")):
+        m = re.search(r'^name:\s*"?(.*?)"?\s*$', md.read_text(encoding="utf-8"), re.M)
+        if m and key(m.group(1)) == key(name):
+            return md.stem
+    return slugify(name)
 
 
 def yaml_quote(value: str) -> str:
@@ -139,20 +174,22 @@ def download_photo(markdown: str, slug: str) -> str | None:
     if len(data) > MAX_BYTES:
         print("::warning::photo exceeds 8 MB; skipping")
         return None
-    AVATARS.mkdir(parents=True, exist_ok=True)
-    # drop any prior avatar of a different extension so a format change doesn't orphan a file
-    for old in AVATARS.glob(f"{slug}.*"):
-        if old.name != f"{slug}.{ext}":
-            old.unlink()
-    (AVATARS / f"{slug}.{ext}").write_bytes(data)
-    return f"./avatars/{slug}.{ext}"
+    # Each person's photo lives in avatars/<slug>/, the folder the CMS uploads into too, so
+    # the new photo replaces whatever is there and no one else's file can be touched.
+    clear_avatar_files(slug)
+    folder = AVATARS / slug
+    folder.mkdir(parents=True, exist_ok=True)
+    (folder / f"{slug}.{ext}").write_bytes(data)
+    return f"./avatars/{slug}/{slug}.{ext}"
 
 
 def clear_avatar_files(slug: str) -> None:
-    """Remove any avatars/<slug>.* so a removed photo leaves no orphan image file."""
-    if AVATARS.exists():
-        for f in AVATARS.glob(f"{slug}.*"):
-            f.unlink()
+    """Empty avatars/<slug>/ so a removed or replaced photo leaves no orphan file."""
+    folder = AVATARS / slug
+    if folder.is_dir():
+        for f in folder.iterdir():
+            if f.is_file():
+                f.unlink()
 
 
 def next_order() -> int:
@@ -175,14 +212,14 @@ def main() -> None:
     name = re.sub(r"^\s*\[[^\]]*\]\s*", "", os.environ.get("ISSUE_TITLE", "")).strip()
     if not name:
         sys.exit("::error::name (the issue title) is required")
-    initials = clean(fields.get("initials")) or "?"
     role = clean(fields.get("role")) or ""
-    cohort = clean(fields.get("cohort")) or "current"
-    if cohort not in ("current", "past"):
-        cohort = "current"
-    slug = slugify(name)
+    cohort = COHORTS.get((clean(fields.get("cohort")) or "").lower(), "current")
+    slug = card_slug(name)
     md_path = PEOPLE / f"{slug}.md"
     existing = parse_existing(md_path)  # {} for a new person; an update merges into this
+    name = " ".join(name.split())
+    if existing.get("name") and name == name.lower():
+        name = existing["name"]  # a title typed in lowercase keeps the card's own capitals
 
     # "Remove fields" checkboxes — github-issue-parser v3 emits an array of the
     # checked option labels; map each to the card field it clears. An explicit
@@ -192,11 +229,15 @@ def main() -> None:
         checked = [checked]
     to_clear = {CLEAR_LABEL_TO_KEY[c.strip()] for c in checked if c.strip() in CLEAR_LABEL_TO_KEY}
 
-    lines = [f"initials: {yaml_quote(initials[:3])}", f"name: {yaml_quote(name)}", f"role: {yaml_quote(role)}"]
+    # Blank initials keep the card's own, else the site derives them from the name.
+    initials = clean(fields.get("initials")) or existing.get("initials")
+    lines = [f"initials: {yaml_quote(initials[:3])}"] if initials else []
+    lines += [f"name: {yaml_quote(name)}", f"role: {yaml_quote(role)}"]
     for key, validator in STRING_FIELDS:
         val = clean(fields.get(key))
-        if val and key in URL_FIELDS and not val.lower().startswith(("http://", "https://")):
-            val = "https://" + val  # bare domain → add the protocol the validator needs
+        if val and key in URL_FIELDS:
+            # bare domain or http:// → the https:// link the validator needs
+            val = "https://" + re.sub(r"^https?://", "", val, flags=re.I)
         if val and validator and not validator.match(val):
             print(f"::warning::ignoring {key}={val!r} — doesn't match the expected format")
             val = None
@@ -204,6 +245,20 @@ def main() -> None:
         chosen = val or (None if key in to_clear else existing.get(key))
         if chosen:
             lines.append(f"{key}: {yaml_quote(chosen)}")
+    years_text = clean(fields.get("years"))
+    years = parse_years(years_text, datetime.now(timezone.utc).year) if years_text else None
+    if years_text and years is None:
+        print(f"::warning::ignoring years={years_text!r}: give a year or range, like 2018-2022")
+    if years:
+        start, end = years
+    elif "years_from" in to_clear:
+        start = end = None
+    else:
+        start, end = existing.get("years_from"), existing.get("years_to")
+    if start:
+        lines.append(f"years_from: {start}")
+        if end:
+            lines.append(f"years_to: {end}")
     lines.append(f"cohort: {cohort}")
     lines.append(f"order: {existing.get('order') or next_order()}")
     new_photo = download_photo(fields.get("photo") or "", slug)

@@ -3,6 +3,7 @@
 // The lab lead spans two columns and uses the width for a larger photo beside the name.
 import type { Person } from "../lib/people";
 import Avatar from "./Avatar.astro";
+import { formatYears } from "../lib/profile-fields";
 import ContactLinks from "./ContactLinks.astro";
 
 interface Props {
@@ -13,6 +14,7 @@ const { p } = Astro.props;
 const base = import.meta.env.BASE_URL.replace(/\/$/, "");
 const lead = Boolean(p.lead);
 const href = `${base}/people/${p.id}/`;
+const years = formatYears(p.years_from, p.years_to);
 ---
 
 <div
@@ -25,6 +27,7 @@ const href = `${base}/people/${p.id}/`;
     <Avatar
       avatar={p.avatar}
       github={p.github}
+      name={p.name}
       initials={p.initials}
       size={lead ? 112 : 64}
       transitionName={`avatar-${p.id}`}
@@ -50,7 +53,7 @@ const href = `${base}/people/${p.id}/`;
       </a>
     )}
     <p class:list={["text-text-dim", lead ? "mt-1 text-[15px]" : "mt-2 text-[13px]"]}>{p.role}</p>
-    {p.years && <p class="mt-1 text-xs text-text-dim">{p.years}</p>}
+    {years && <p class="mt-1 text-xs text-text-dim">{years}</p>}
     <ContactLinks
       email={p.email}
       scholar={p.scholar}

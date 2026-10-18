@@ -11,5 +11,5 @@ ieee: https://ieeexplore.ieee.org/author/37271384500
 cohort: current
 lead: true
 order: 1
-avatar: ./avatars/leon-reznik.png
+avatar: ./avatars/leon-reznik/leon-reznik.png
 ---

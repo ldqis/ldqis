@@ -44,6 +44,10 @@ logo:
 # rendered from astro's site + base by src/pages/admin/config.yml.ts.
 site_url: __SITE_URL__
 
+# Leave unfilled optional fields out of the saved file, so a card holds only what was entered.
+output:
+  omit_empty_optional_fields: true
+
 # Fallback media location (no collection uses it yet; people override below).
 media_folder: public/media
 public_folder: /media
@@ -59,6 +63,7 @@ collections:
   - name: people
     label: People
     label_singular: Person
+    description: "Everyone on the site's People page. Search for your name to update your card, or choose **New** to add yourself."
     icon: group
     preview_path: "__BASE_PREFIX__people/{{slug}}/"
     folder: src/content/people
@@ -67,59 +72,116 @@ collections:
     create: true
     identifier_field: name
     summary: "{{name}} · {{role}}"
-    # Avatars live beside the cards and are referenced as ./avatars/<file>.
-    media_folder: avatars
-    public_folder: ./avatars
+    view_groups:
+      groups:
+        - { name: cohort, label: Current and past members, field: cohort }
+      default: cohort
+    # Each person's photo goes in a folder named after their card, so two uploads named
+    # photo.jpg can never replace each other.
+    media_folder: "avatars/{{filename}}"
+    public_folder: "./avatars/{{filename}}"
+    # Rules shared with the build (src/lib/profile-fields.ts); __PATTERN_*__ and the
+    # __YEARS_*__ option lists are filled in by src/pages/admin/config.yml.ts.
     fields:
-      - {
-          label: Initials,
-          name: initials,
-          widget: string,
-          hint: "1-3 letters, shown when there is no photo",
-        }
-      - { label: Name, name: name, widget: string }
-      - { label: Role, name: role, widget: string, hint: "one line under the name" }
-      - { label: Cohort, name: cohort, widget: select, options: [current, past], default: current }
-      - {
-          label: Order,
-          name: order,
-          widget: number,
-          value_type: int,
-          default: 100,
-          hint: "lower shows first",
-        }
-      - {
-          label: Photo,
-          name: avatar,
-          widget: image,
-          required: false,
-          hint: "name the file after the person before uploading (jane-doe.jpg) — all avatars share one folder, so a reused generic name like self.jpg replaces the previous person's photo",
-        }
-      - { label: Email, name: email, widget: string, required: false }
-      - { label: Website, name: website, widget: string, required: false }
-      - {
-          label: GitHub handle,
-          name: github,
-          widget: string,
-          required: false,
-          hint: "just the handle, not a URL",
-        }
-      - { label: LinkedIn URL, name: linkedin, widget: string, required: false }
-      - { label: YouTube URL, name: youtube, widget: string, required: false }
-      - { label: Google Scholar URL, name: scholar, widget: string, required: false }
-      - { label: IEEE Xplore URL, name: ieee, widget: string, required: false }
-      - { label: ORCID iD, name: orcid, widget: string, required: false }
-      - label: Years in the lab
-        name: years
+      - label: Name
+        name: name
+        widget: string
+        unique: true
+        hint: "As it should appear on the site, for example Dr. Jane Doe"
+      - label: Role
+        name: role
+        widget: string
+        hint: "One line under your name: your position, focus or a paper you're proud of"
+      - label: Photo
+        name: avatar
+        widget: image
+        required: false
+        hint: "A square photo of your face works best. Without one, the site shows your GitHub picture, then your initials."
+      - label: In the lab since
+        name: years_from
+        widget: select
+        required: false
+        options: __YEARS_FROM_OPTIONS__
+      - label: Until
+        name: years_to
+        widget: select
+        required: false
+        options: __YEARS_TO_OPTIONS__
+        hint: "Pick Present if you're still in the lab"
+      - label: In the lab now?
+        name: cohort
+        widget: select
+        default: current
+        options:
+          - { label: Current member, value: current }
+          - { label: Past member, value: past }
+      - { label: Email, name: email, widget: string, type: email, required: false }
+      - label: Website
+        name: website
+        widget: string
+        type: url
+        required: false
+        hint: "The full link, starting with https://"
+      - label: GitHub username
+        name: github
         widget: string
         required: false
-        hint: "a year or range, e.g. 2018–2022 or 2020–present"
-        pattern: ['\b(19|20)\d{2}\b', "Use a year or range, e.g. 2018–2022 or 2020–present"]
-      - { label: Lab lead, name: lead, widget: boolean, required: false, default: false }
+        pattern: [__PATTERN_GITHUB__]
+        hint: "Just the username, like ajbarea"
+      - label: LinkedIn
+        name: linkedin
+        widget: string
+        type: url
+        required: false
+        pattern: [__PATTERN_LINKEDIN__]
+      - label: YouTube
+        name: youtube
+        widget: string
+        type: url
+        required: false
+        pattern: [__PATTERN_YOUTUBE__]
+      - label: Google Scholar
+        name: scholar
+        widget: string
+        type: url
+        required: false
+        pattern: [__PATTERN_SCHOLAR__]
+      - label: IEEE Xplore
+        name: ieee
+        widget: string
+        type: url
+        required: false
+        pattern: [__PATTERN_IEEE__]
+      - label: ORCID iD
+        name: orcid
+        widget: string
+        required: false
+        pattern: [__PATTERN_ORCID__]
+        hint: "Like 0000-0002-1825-0097"
+      - label: Lab director
+        name: lead
+        widget: boolean
+        required: false
+        default: false
+        hint: "On for Dr. Reznik only: his card is wider"
+      - label: Position on the team list
+        name: order
+        widget: number
+        value_type: int
+        min: 1
+        default: 100
+        hint: "Lower numbers show first. Lab admins set this; new members can leave it."
+      - label: Initials
+        name: initials
+        widget: string
+        required: false
+        maxlength: 3
+        hint: "Shown when there is no photo. Leave blank to use your name's first letters."
 
   - name: publications
     label: Publications
     label_singular: Publication
+    description: "Papers and books on the site. Turn on **Feature on the homepage** only for the lab's strongest recent work."
     icon: menu_book
     preview_path: "__BASE_PREFIX__publications/{{slug}}/"
     folder: src/content/publications
@@ -136,7 +198,12 @@ collections:
           widget: string,
           hint: "e.g. D. Korobeinikov, R. Zatsarenko, L. Reznik",
         }
-      - { label: Year, name: year, widget: string }
+      - {
+          label: Year,
+          name: year,
+          widget: string,
+          pattern: ["^\\d{4}$", "Enter the four-digit year, like 2026"],
+        }
       - { label: Venue or publisher, name: venue, widget: string }
       - {
           label: Type,
@@ -151,7 +218,7 @@ collections:
         widget: object
         fields:
           - { label: Label, name: label, widget: string, default: "DOI ↗" }
-          - { label: URL, name: href, widget: string }
+          - { label: URL, name: href, widget: string, type: url }
       - label: Author profile links
         name: author_ids
         widget: relation
@@ -180,6 +247,7 @@ collections:
   - name: projects
     label: Projects
     label_singular: Project
+    description: "Research projects and the software tools the lab builds."
     icon: deployed_code
     preview_path: "__BASE_PREFIX__projects/{{slug}}/"
     folder: src/content/projects
@@ -226,6 +294,7 @@ collections:
   - name: news
     label: News
     label_singular: Post
+    description: "News posts. Turn on **Draft** to save a post without publishing it."
     icon: newspaper
     preview_path: "__BASE_PREFIX__news/{{slug}}/"
     folder: src/content/news
@@ -242,7 +311,8 @@ collections:
           label: Summary,
           name: summary,
           widget: string,
-          hint: "max 280 chars; shown in lists + RSS",
+          maxlength: 280,
+          hint: "One or two sentences, shown in the news list and the RSS feed",
         }
       - {
           label: Publish date,

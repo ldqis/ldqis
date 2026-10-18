@@ -15,6 +15,7 @@
 import { glob } from "astro/loaders";
 import { defineCollection, reference } from "astro:content";
 import { z } from "astro/zod";
+import { LAB_FIRST_YEAR, PRESENT, PROFILE_PATTERNS as P } from "./lib/profile-fields";
 import {
   STATS_ENDPOINT,
   STATS_MIRROR,
@@ -111,70 +112,55 @@ const people = defineCollection({
   // `({ image })` unlocks the image() helper so `avatar` can be an optimized
   // local image (Astro processes + hashes it at build).
   schema: ({ image }) =>
-    z.object({
-      initials: z.string().min(1).max(3),
-      name: z.string(),
-      role: z.string(),
-      email: blankable(z.email()),
-      // Optional Google Scholar profile URL. When set, the homepage team
-      // card + the per-person detail page render a "Google Scholar" link
-      // alongside the email button. Constrained to the scholar.google.com
-      // host so a typo in the frontmatter (e.g. dropping the URL or
-      // pasting a researchgate link) doesn't silently surface as an
-      // ambiguous external link.
-      scholar: blankable(
-        z.url().regex(/^https:\/\/scholar\.google\.com\//, {
-          message: "scholar URL must point at https://scholar.google.com/",
-        }),
+    z
+      .object({
+        // Shown when there is no photo; blank derives them from the name.
+        initials: blankable(z.string().min(1).max(3)),
+        name: z.string(),
+        role: z.string(),
+        email: blankable(z.email()),
+        // Optional Google Scholar profile URL. When set, the homepage team
+        // card + the per-person detail page render a "Google Scholar" link
+        // alongside the email button. Constrained to the scholar.google.com
+        // host so a typo in the frontmatter (e.g. dropping the URL or
+        // pasting a researchgate link) doesn't silently surface as an
+        // ambiguous external link.
+        // Link fields share their checks with the CMS form (src/lib/profile-fields.ts).
+        scholar: blankable(z.url().regex(P.scholar.pattern, P.scholar.message)),
+        ieee: blankable(z.url().regex(P.ieee.pattern, P.ieee.message)),
+        website: blankable(z.url()),
+        // GitHub *handle*: drives the GitHub link and, without an `avatar`, the photo.
+        github: blankable(z.string().regex(P.github.pattern, P.github.message)),
+        linkedin: blankable(z.url().regex(P.linkedin.pattern, P.linkedin.message)),
+        youtube: blankable(z.url().regex(P.youtube.pattern, P.youtube.message)),
+        // ORCID iD in canonical 0000-0000-0000-0000 form (the link is built from it).
+        orcid: blankable(z.string().regex(P.orcid.pattern, P.orcid.message)),
+        // Profile photo: drop a file in src/content/people/avatars/ and set
+        // `avatar: ./avatars/your-name.jpg`. Astro optimizes it. Falls back to the
+        // GitHub avatar (if `github` set), then initials.
+        avatar: image().optional(),
+        // Years in the lab: a start year and an end year or "present", both picked from
+        // dropdowns in the CMS. The card shows "2021–present".
+        years_from: z.number().int().min(LAB_FIRST_YEAR).optional(),
+        years_to: z.union([z.literal(PRESENT), z.number().int().min(LAB_FIRST_YEAR)]).optional(),
+        cohort: z.enum(["current", "past"]),
+        lead: z.boolean().optional(),
+        order: z.number().int().nonnegative(),
+      })
+      .refine((p) => p.years_to === undefined || p.years_from !== undefined, {
+        message: "Years in the lab: pick the year you started too",
+        path: ["years_from"],
+      })
+      .refine(
+        (p) =>
+          typeof p.years_to !== "number" ||
+          p.years_from === undefined ||
+          p.years_to >= p.years_from,
+        {
+          message: "Years in the lab: the end year comes before the start year",
+          path: ["years_to"],
+        },
       ),
-      // Optional IEEE Xplore author-profile URL. Same treatment as `scholar`:
-      // host-constrained so a mistyped or wrong-host link fails the build.
-      ieee: blankable(
-        z.url().regex(/^https:\/\/ieeexplore\.ieee\.org\//, {
-          message: "ieee URL must point at https://ieeexplore.ieee.org/",
-        }),
-      ),
-      // --- Social / web links (all optional; paste the full URL unless noted) ---
-      // Personal website or homepage.
-      website: blankable(z.url()),
-      // GitHub *handle* (e.g. "ajbarea", not a URL). Drives the GitHub link and —
-      // when no `avatar` image is set — the profile photo (github.com/<handle>.png).
-      github: blankable(
-        z.string().regex(/^[A-Za-z0-9](?:[A-Za-z0-9-]{0,38})$/, {
-          message: 'github must be a handle like "ajbarea", not a URL',
-        }),
-      ),
-      linkedin: blankable(
-        z.url().regex(/linkedin\.com\//, { message: "linkedin must be a linkedin.com URL" }),
-      ),
-      youtube: blankable(
-        z.url().regex(/youtube\.com\/|youtu\.be\//, {
-          message: "youtube must be a youtube.com URL",
-        }),
-      ),
-      // ORCID iD in canonical 0000-0000-0000-0000 form (the link is built from it).
-      orcid: blankable(
-        z.string().regex(/^\d{4}-\d{4}-\d{4}-\d{3}[\dX]$/, {
-          message: "orcid must be an iD like 0000-0002-1825-0097",
-        }),
-      ),
-      // Profile photo: drop a file in src/content/people/avatars/ and set
-      // `avatar: ./avatars/your-name.jpg`. Astro optimizes it. Falls back to the
-      // GitHub avatar (if `github` set), then initials.
-      avatar: image().optional(),
-      // Years in the lab, e.g. "2018–2022", "2021" or "2020–present". A bare count like "5"
-      // reads as a stray number on the card, so a four-digit year is required.
-      years: z
-        .string()
-        .regex(
-          /^$|\b(19|20)\d{2}\b/,
-          'Years in the lab needs a year, e.g. "2018–2022" or "2020–present"',
-        )
-        .optional(),
-      cohort: z.enum(["current", "past"]),
-      lead: z.boolean().optional(),
-      order: z.number().int().nonnegative(),
-    }),
 });
 
 // News / blog posts — dated, optional tags + author. Field names match

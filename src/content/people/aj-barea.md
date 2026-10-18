@@ -4,7 +4,7 @@ name: AJ Barea
 role: RIT PhD Researcher · Sphragis · Pharos · Phalanx-FL
 cohort: current
 order: 5
-avatar: ./avatars/aj-barea.png
+avatar: ./avatars/aj-barea/aj-barea.png
 email: ajb6289@rit.edu
 website: https://ajbarea.github.io
 github: ajbarea

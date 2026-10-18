@@ -1,6 +1,7 @@
 import type { APIRoute } from "astro";
 import template from "../../admin/config.template.yml?raw";
 import pkg from "../../../package.json";
+import { PRESENT, PROFILE_PATTERNS, labYears } from "../../lib/profile-fields";
 
 // research(2026-05): Sveltia builds every "View on Live Site" link as
 // `new URL(site_url).origin + '/' + preview_path` (sveltia-cms config/index.js
@@ -24,12 +25,25 @@ export const GET: APIRoute = ({ site }) => {
   // Base "/" → "" (no prefix); a sub-path base "/x/" → "x/".
   const basePrefix = base.replace(/^\//, "");
 
+  // A dropdown takes plain values or label/value pairs, never both.
+  const yearOptions = labYears().map((y) => ({ label: String(y), value: y }));
   const config = template
     .replaceAll("__SITE_URL__", siteURL)
     .replaceAll("__BASE_PREFIX__", basePrefix)
-    .replaceAll("__CMS_VERSION__", pkg.dependencies["@sveltia/cms"]);
+    .replaceAll("__CMS_VERSION__", pkg.dependencies["@sveltia/cms"])
+    // The year dropdowns run from the lab's first year to this one, rebuilt on each deploy.
+    .replaceAll("__YEARS_FROM_OPTIONS__", JSON.stringify(yearOptions))
+    .replaceAll(
+      "__YEARS_TO_OPTIONS__",
+      JSON.stringify([{ label: "Present", value: PRESENT }, ...yearOptions]),
+    )
+    // Each link field gets the build's own pattern and message, as JSON (valid YAML).
+    .replace(/__PATTERN_([A-Z]+)__/g, (_, key: string) => {
+      const rule = PROFILE_PATTERNS[key.toLowerCase() as keyof typeof PROFILE_PATTERNS];
+      return `${JSON.stringify(rule.pattern.source)}, ${JSON.stringify(rule.message)}`;
+    });
 
-  if (/__(SITE_URL|BASE_PREFIX|CMS_VERSION)__/.test(config)) {
+  if (/__[A-Z_]+__/.test(config)) {
     throw new Error("admin/config.yml: unsubstituted template placeholder");
   }
 
