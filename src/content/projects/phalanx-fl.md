@@ -8,7 +8,7 @@ desc: "A platform for stress-testing federated learning under attack: configure,
 links:
   - { label: "GitHub ↗", href: "https://github.com/ajbarea/phalanx-fl" }
   - { label: "Docs ↗", href: "https://ajbarea.github.io/phalanx-fl/" }
-order: 2
+order: 3
 contributors:
   - aj-barea
 ---
