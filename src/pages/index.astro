@@ -209,7 +209,8 @@ const pastCohort = peopleEntries
           style="background: var(--color-line);"
         >
           {[
-            { num: "4", label: "Active OSS projects" },
+            // Counted from the projects collection, so it never drifts from the list below.
+            { num: `${projects.length}`, label: "Open-source projects" },
             { num: "25+", label: "Researchers trained" },
             // research(2026-06): the live count of the imported publication
             // record (`allPubs.length` from src/data/publications-all.json) —

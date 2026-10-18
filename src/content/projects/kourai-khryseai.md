@@ -7,7 +7,7 @@ desc: "<strong>Ten specialized A2A-protocol agents</strong> — planner, coder, 
 links:
   - { label: "GitHub ↗", href: "https://github.com/ajbarea/kourai-khryseai" }
   - { label: "Site ↗", href: "https://ajbarea.github.io/kourai-khryseai/" }
-order: 4
+order: 5
 contributors:
   - aj-barea
 ---

@@ -7,7 +7,7 @@ desc: "A federated learning runtime with a <strong>Rust aggregation core</strong
 links:
   - { label: "GitHub ↗", href: "https://github.com/ajbarea/velocity-fl" }
   - { label: "Docs ↗", href: "https://ajbarea.github.io/velocity-fl/" }
-order: 3
+order: 4
 contributors:
   - aj-barea
 ---

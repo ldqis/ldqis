@@ -1,7 +1,7 @@
 ---
 initials: AB
 name: AJ Barea
-role: RIT Graduate Researcher · Phalanx-FL · Velocity-FL · Kourai Khryseai
+role: RIT PhD Researcher · Sphragis · Phalanx-FL · Velocity-FL · Kourai Khryseai
 cohort: current
 order: 5
 avatar: ./avatars/aj-barea.png

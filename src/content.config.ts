@@ -48,7 +48,7 @@ const projects = defineCollection({
     desc: z.string(),
     links: z.array(z.object({ label: z.string(), href: z.url() })).min(1),
     // Ordering: lower numbers render first. Mirrors the prior array order
-    // (InteFL → Phalanx-FL → Velocity-FL → Kourai Khryseai) without
+    // (InteFL → Sphragis → Phalanx-FL → Velocity-FL → Kourai Khryseai) without
     // depending on filesystem listing.
     order: z.number().int().nonnegative(),
     // research(2026-05): Astro's `reference("people")` validates each
