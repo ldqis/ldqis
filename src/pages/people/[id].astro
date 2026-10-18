@@ -1,4 +1,5 @@
 ---
+import { formatYears } from "../../lib/profile-fields";
 import { type GetStaticPaths } from "astro";
 import { getCollection } from "astro:content";
 import BaseLayout from "../../layouts/BaseLayout.astro";
@@ -33,9 +34,11 @@ const {
   youtube,
   orcid,
   avatar,
-  years,
+  years_from,
+  years_to,
   cohort,
 } = entry.data;
+const years = formatYears(years_from, years_to);
 const cohortLabel = cohort === "current" ? "Current team" : "Past cohort";
 
 // Cross-links are computed at build time by walking the source collections
@@ -96,6 +99,7 @@ const baseUrl = import.meta.env.BASE_URL.replace(/\/$/, "");
         <Avatar
           avatar={avatar}
           github={github}
+          name={name}
           initials={initials}
           size={200}
           class="order-first md:order-last"

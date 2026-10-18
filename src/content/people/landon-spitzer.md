@@ -8,5 +8,5 @@ github: "lbs9440"
 linkedin: "https://www.linkedin.com/in/landonspitzer/"
 cohort: current
 order: 12
-avatar: ./avatars/landon-spitzer.png
+avatar: ./avatars/landon-spitzer/landon-spitzer.png
 ---

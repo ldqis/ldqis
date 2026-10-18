@@ -2,12 +2,14 @@
 // Past members as a compact ruled text list: they have no photos, so initials circles
 // added noise, not information. Each name links to the person's page.
 import type { Person } from "../lib/people";
+import { formatYears } from "../lib/profile-fields";
 
 interface Props {
   people: Person[];
 }
 
 const { people } = Astro.props;
+const rows = people.map((p) => ({ ...p, years: formatYears(p.years_from, p.years_to) }));
 const base = import.meta.env.BASE_URL.replace(/\/$/, "");
 ---
 
@@ -15,7 +17,7 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, "");
   class="grid grid-cols-1 gap-x-10 border-t border-line sm:grid-cols-2 lg:grid-cols-3"
   role="list"
 >
-  {people.map((p) => (
+  {rows.map((p) => (
     <li class="border-b border-line py-3">
       <a
         href={`${base}/people/${p.id}/`}

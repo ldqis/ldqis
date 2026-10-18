@@ -11,14 +11,6 @@ body:
 
         **Updating an existing card?** Filling a field changes it; leaving a field **blank keeps** what's there now. To **remove** something, tick it in the checkboxes at the bottom.
   - type: input
-    id: initials
-    attributes:
-      label: Initials
-      description: 1–3 letters, shown in your avatar circle if you have no photo.
-      placeholder: FL
-    validations:
-      required: true
-  - type: input
     id: role
     attributes:
       label: Role / focus
@@ -29,10 +21,10 @@ body:
   - type: dropdown
     id: cohort
     attributes:
-      label: Cohort
+      label: Are you in the lab now?
       options:
-        - current
-        - past
+        - Current member
+        - Past member
     validations:
       required: true
   - type: textarea
@@ -85,8 +77,8 @@ body:
     id: years
     attributes:
       label: Years in the lab (optional)
-      description: A year or range, such as 2018–2022 or 2020–present.
-      placeholder: 2018–2022
+      description: The year you joined, and the year you left or "present", such as 2021–present or 2018–2022.
+      placeholder: 2021–present
   - type: checkboxes
     id: clear
     attributes:
