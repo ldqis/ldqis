@@ -10,6 +10,8 @@ const LAB = {
   "Join us": /^mailto:lrvcs@rit\.edu/,
   "Get in touch": /^mailto:lrvcs@rit\.edu$/,
   "Dr. Reznik on Google Scholar": /scholar\.google\.com/,
+  "Site source on GitHub": /^https:\/\/github\.com\/ldqis\/ldqis$/,
+  "RSS feed": /^\/news\/rss\.xml$/,
 };
 const NAV = ["Research", "Projects", "Publications", "People", "News"];
 
@@ -27,7 +29,9 @@ test.describe("footer", () => {
           const footer = page.locator("footer#site-footer");
           await expect(footer).toHaveCount(1);
           await footer.scrollIntoViewIfNeeded();
-          await expect(footer).toHaveCSS("background-color", "rgb(0, 0, 0)");
+          // The footer follows the theme under a hairline rule, not a fixed dark block.
+          await expect(footer).toHaveCSS("border-top-style", "solid");
+          await expect(footer).not.toHaveCSS("background-color", "rgb(0, 0, 0)");
           await expect(footer.getByRole("img")).toHaveCount(0);
           await expect(
             footer.getByRole("link", { name: "lrvcs@rit.edu", exact: true }),
@@ -35,8 +39,9 @@ test.describe("footer", () => {
           await expect(footer.getByText("1 Lomb Memorial Drive")).toBeVisible();
           await expect(footer.getByText("Rochester Institute of Technology")).toBeVisible();
           await expect(footer.locator('a[href^="https://www.rit.edu/"]')).toHaveCount(1);
+          // The header carries the primary sections; the footer does not repeat them.
           for (const name of NAV)
-            await expect(footer.getByRole("link", { name, exact: true })).toBeVisible();
+            await expect(footer.getByRole("link", { name, exact: true })).toHaveCount(0);
           for (const [name, href] of Object.entries(LAB))
             await expect(footer.getByRole("link", { name, exact: true })).toHaveAttribute(
               "href",

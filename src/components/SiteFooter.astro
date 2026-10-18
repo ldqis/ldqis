@@ -1,45 +1,45 @@
 ---
 import { CONTACT_EMAIL, footerGroups } from "../lib/site-links";
 
+// research(2026-10): recognized lab sites are restrained (typography, spacing and hierarchy do
+// the work; text separated by lines rather than boxes), and current footer practice favors a
+// light, sparse footer: contact details plus the few links the header lacks. So the footer
+// follows the site's own theme tokens under a hairline, not a borrowed institutional block.
+// Sources: thisisvisceral.com (Flatiron, Biohub), the-scientist.com lab website awards,
+// orbitmedia.com footer guidance.
 const groups = footerGroups(import.meta.env.BASE_URL);
-const linkClass = "inline-block py-1 text-white underline-offset-4 hover:underline";
+const linkClass = "text-text-dim underline-offset-4 hover:text-rit-orange-text hover:underline";
 ---
 
-<footer id="site-footer" class="relative z-[1] bg-black text-white">
-  <div class="mx-auto max-w-[1200px] px-6 py-14">
-    <div class="grid gap-10 lg:grid-cols-[1.5fr_2fr]">
-      <div>
-        <address class="text-sm leading-relaxed text-neutral-300 not-italic">
-          <p>
-            <span class="text-base font-medium text-white">
-              Laboratory of Data Quality and Intelligent Security
-            </span>
-            <br />
-            <a href="https://www.rit.edu/computing/" class={linkClass}>
-              Golisano College of Computing and Information Sciences
-            </a>
-            <br />
-            Rochester Institute of Technology
-            <br />
-            1 Lomb Memorial Drive
-            <br />
-            Rochester, NY 14623
-          </p>
-          <p class="mt-2 flex flex-col items-start">
-            <a href={`mailto:${CONTACT_EMAIL}`} class={linkClass}>
-              {CONTACT_EMAIL}
-            </a>
-          </p>
-        </address>
-      </div>
+<footer id="site-footer" class="relative z-[1] border-t border-line">
+  <div class="mx-auto max-w-[1200px] px-6 pt-10 pb-8">
+    <div class="grid gap-10 md:grid-cols-[1fr_auto] md:gap-16">
+      <address class="text-sm leading-relaxed text-text-dim not-italic">
+        <p
+          class="mb-3 text-text"
+          style="font-family: var(--font-display); font-size: 24px; line-height: 1.15; letter-spacing: -0.3px;"
+        >
+          Laboratory of Data Quality and Intelligent Security
+        </p>
+        <p>
+          <a href="https://www.rit.edu/computing/" class={linkClass}>
+            Golisano College of Computing and Information Sciences
+          </a>
+          <br />
+          Rochester Institute of Technology, 1 Lomb Memorial Drive, Rochester, NY 14623
+        </p>
+        <p class="mt-3">
+          <a href={`mailto:${CONTACT_EMAIL}`} class={linkClass}>
+            {CONTACT_EMAIL}
+          </a>
+        </p>
+      </address>
 
-      <nav aria-label="Footer" class="grid gap-10 sm:grid-cols-2 sm:items-start">
+      <nav aria-label="Footer" class="grid grid-cols-2 gap-x-14 gap-y-8 text-sm">
         {groups.map((g) => (
           <div>
-            <h2 class="mb-4 text-xs font-medium tracking-[1px] text-neutral-300 uppercase">
-              {g.heading}
-            </h2>
-            <ul class="space-y-1 text-sm">
+            <h2 class="mb-3 text-[13px] font-medium text-text">{g.heading}</h2>
+            <ul class="space-y-1.5">
               {g.links.map((l) => (
                 <li>
                   <a href={l.href} class={linkClass}>
@@ -53,7 +53,7 @@ const linkClass = "inline-block py-1 text-white underline-offset-4 hover:underli
       </nav>
     </div>
 
-    <p class="mt-10 border-t border-neutral-700 pt-6 text-xs text-neutral-300">
+    <p class="mt-8 text-xs text-text-faint">
       &copy; {new Date().getFullYear()} Laboratory of Data Quality and Intelligent Security
     </p>
   </div>

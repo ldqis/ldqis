@@ -38,6 +38,12 @@ These hold across redesigns; changing any is a deliberate decision, not drift.
 
 ### Backlog (unprioritized)
 
+- **Lines, not boxes.** The homepage sets research areas, projects, and publications in
+  rounded, bordered cards. research(2026-10): the lab sites singled out for design (Flatiron,
+  Biohub, The Scientist's lab-website award winners) are restrained and let typography, spacing,
+  and hairline rules carry the structure. Rework one section at a time, starting with research
+  areas, and compare each against the current version before moving on. Sources:
+  thisisvisceral.com, the-scientist.com.
 - **Research areas / themes** — group the lab's work by problem area (data quality,
   integrity, security) on the homepage and a research page, each theme linking its projects,
   publications, and people. research(2026-06): peer lab sites (Stanford AI, Oxford OATML)
@@ -82,6 +88,12 @@ ideas. These were weighed and declined, recorded so they aren't re-proposed:
 ## Shipped
 
 Highlights below; full history in git.
+
+- **2026-10-18: A lighter footer.** The footer follows the site's theme under a hairline rule
+  instead of a fixed black block, and holds only what the header lacks: the lab's address and
+  email, its own links, and Scholar, GitHub, and RSS. research(2026-10): recognized lab sites
+  are restrained and separate text with lines rather than boxes. Sources: thisisvisceral.com
+  (Flatiron, Biohub), the-scientist.com lab website awards.
 
 - **2026-10-17: News cover photos.** A post can carry one optional cover photo, optimized by
   Astro, with required alt text and a caption that credits the photographer. It heads the post,
