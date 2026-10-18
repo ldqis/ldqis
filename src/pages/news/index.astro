@@ -1,6 +1,7 @@
 ---
 import { getCollection } from "astro:content";
 import { Image } from "astro:assets";
+import { formatTags } from "../../lib/news";
 import BaseLayout from "../../layouts/BaseLayout.astro";
 import Nav from "../../components/Nav.astro";
 
@@ -30,7 +31,7 @@ const base = (import.meta.env.BASE_URL || "/").replace(/\/$/, "");
 
   <main id="main" class="relative z-[1] pt-16 pb-32">
     <header class="mx-auto max-w-[800px] px-6 pb-12">
-      <div class="mb-4 text-xs tracking-[1.5px] text-rit-orange-text uppercase">News</div>
+      <p class="mb-4 text-sm font-medium text-rit-orange-text">News</p>
       <h1
         class="mb-4"
         style="font-family: var(--font-display); font-size: clamp(40px, 6vw, 64px); line-height: 1.05; letter-spacing: -1px;"
@@ -55,55 +56,48 @@ const base = (import.meta.env.BASE_URL || "/").replace(/\/$/, "");
         No posts yet. Check back soon, or subscribe via RSS.
       </p>
     ) : (
-      <ol class="mx-auto flex max-w-[800px] flex-col gap-6 px-6">
-        {posts.map((post) => (
-          <li
-            class:list={[
-              "rounded-[14px] border border-line bg-bg-elev p-8 transition-colors hover:border-rit-orange",
-              post.data.cover && "sm:grid sm:grid-cols-[1fr_200px] sm:gap-8",
-            ]}
-          >
-            {post.data.cover && (
-              <Image
-                src={post.data.cover}
-                alt=""
-                widths={[400, 600]}
-                sizes="(min-width: 640px) 200px, calc(100vw - 112px)"
-                class="mb-5 aspect-[3/2] w-full rounded-[10px] object-cover sm:order-last sm:mb-0"
-              />
-            )}
-            <div>
-              <time
-                datetime={post.data.pubDate.toISOString()}
-                class="mb-3 block text-xs tracking-[1.5px] text-text-faint uppercase"
-              >
-                {dateFmt.format(post.data.pubDate)}
-              </time>
-              <h2
-                class="mb-3 text-2xl leading-tight"
-                style="font-family: var(--font-display); letter-spacing: -0.5px;"
-              >
-                <a href={`${base}/news/${post.id}/`} class="hover:text-rit-orange-text">
-                  {post.data.title}
-                </a>
-              </h2>
-              <p class="mb-4 text-[15px] text-text-dim">{post.data.summary}</p>
-              {post.data.tags.length > 0 && (
-                <ul class="flex flex-wrap gap-2">
-                  {post.data.tags.map((t) => (
-                    <li
-                      class="rounded-full border px-[10px] py-[3px] text-[11px] tracking-[1px] uppercase"
-                      style="color: var(--color-rit-orange-text); background: color-mix(in oklab, var(--color-rit-orange) 8%, transparent); border-color: color-mix(in oklab, var(--color-rit-orange) 8%, transparent);"
-                    >
-                      {t}
-                    </li>
-                  ))}
-                </ul>
+      <div class="mx-auto max-w-[800px] px-6">
+        <ol class="border-t border-line" role="list">
+          {posts.map((post) => (
+            <li
+              class:list={[
+                "border-b border-line py-8",
+                post.data.cover && "sm:grid sm:grid-cols-[1fr_200px] sm:gap-8",
+              ]}
+            >
+              {post.data.cover && (
+                <Image
+                  src={post.data.cover}
+                  alt=""
+                  widths={[400, 600]}
+                  sizes="(min-width: 640px) 200px, calc(100vw - 112px)"
+                  class="mb-5 aspect-[3/2] w-full rounded-[10px] object-cover sm:order-last sm:mb-0"
+                />
               )}
-            </div>
-          </li>
-        ))}
-      </ol>
+              <div>
+                <time
+                  datetime={post.data.pubDate.toISOString()}
+                  class="mb-2 block text-sm text-text-faint"
+                >
+                  {dateFmt.format(post.data.pubDate)}
+                </time>
+                <h2
+                  class="mb-3 text-[28px] leading-tight"
+                  style="font-family: var(--font-display); letter-spacing: -0.5px;"
+                >
+                  <a href={`${base}/news/${post.id}/`} class="hover:text-rit-orange-text">
+                    {post.data.title}
+                  </a>
+                </h2>
+                <p class="mb-4 text-[15px] text-text-dim">{post.data.summary}</p>
+                {post.data.tags.length > 0 && (
+                  <p class="text-[13px] text-text-faint">{formatTags(post.data.tags)}</p>
+                )}
+              </div>
+            </li>
+          ))}
+        </ol>
+      </div>
     )}
   </main>
 </BaseLayout>

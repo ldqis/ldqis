@@ -3,6 +3,8 @@ import { type GetStaticPaths } from "astro";
 import { getCollection, getEntries, getEntry, render } from "astro:content";
 import BaseLayout from "../../layouts/BaseLayout.astro";
 import Nav from "../../components/Nav.astro";
+import PeopleList from "../../components/PeopleList.astro";
+import Subhead from "../../components/Subhead.astro";
 import {
   buildCitationTags,
   buildPublicationJsonLd,
@@ -67,76 +69,57 @@ const baseUrl = import.meta.env.BASE_URL.replace(/\/$/, "");
 
   <main id="main" class="relative z-[1] pt-16 pb-32">
     <article class="mx-auto max-w-[800px] px-6">
-      <div class="mb-6 flex items-baseline gap-4">
-        <div
-          class="text-5xl leading-none"
-          style="font-family: var(--font-display); color: var(--color-rit-orange-text); letter-spacing: -1px;"
-        >
-          {year}
-        </div>
-        <div class="text-xs tracking-[1.5px] text-text-faint uppercase">{venue}</div>
-      </div>
+      <p class="mb-4 text-sm font-medium text-rit-orange-text">
+        {venue}, {year}
+      </p>
 
       <h1
-        class="mb-6"
-        style="font-family: var(--font-display); font-size: clamp(28px, 4vw, 42px); line-height: 1.15; letter-spacing: -0.5px;"
+        class="mb-5"
+        style="font-family: var(--font-display); font-size: clamp(30px, 4.5vw, 46px); line-height: 1.12; letter-spacing: -0.5px;"
       >
         {title}
       </h1>
 
       <p class="mb-8 text-lg text-text-dim">{authors}</p>
 
-      {authorEntries.length > 0 && (
-        <ul class="mb-12 flex flex-wrap gap-3" role="list" aria-label="Author profile links">
-          {authorEntries.map((person) => (
-            <li>
-              <a
-                href={`${baseUrl}/people/${person.id}/`}
-                class="inline-flex items-center gap-2 rounded-full border border-line px-[14px] py-[8px] text-sm hover:border-rit-orange hover:text-rit-orange-text"
-              >
-                <span
-                  class="flex h-6 w-6 items-center justify-center rounded-full text-[10px] font-semibold"
-                  style="background: linear-gradient(135deg, var(--color-rit-orange), var(--color-rit-yellow)); color: #0a0e13;"
-                  aria-hidden="true"
-                >
-                  {person.data.initials}
-                </span>
-                {person.data.name}
-              </a>
-            </li>
-          ))}
-        </ul>
-      )}
-
-      {hasBody && (
-        <section class="mb-12" aria-labelledby="about-heading">
-          <h2 id="about-heading" class="mb-4 text-xs tracking-[1.5px] text-text-faint uppercase">
-            {venue_type === "book" ? "About this book" : "Abstract"}
-          </h2>
-          <div class="prose max-w-none">
-            <Content />
-          </div>
-        </section>
-      )}
-
-      <div class="flex flex-wrap gap-3 border-t border-line pt-8">
+      <div class="mb-12 flex flex-wrap gap-x-6 gap-y-2 text-[15px]">
         <a
           href={link.href}
           target="_blank"
           rel="noopener"
-          class="inline-flex items-center gap-2 rounded-full border border-line px-[18px] py-[10px] text-sm hover:border-rit-orange hover:text-rit-orange-text"
+          class="text-rit-orange-text underline-offset-4 hover:underline"
         >
           {link.label}
         </a>
         {projectEntry && (
           <a
             href={`${baseUrl}/projects/${projectEntry.id}/`}
-            class="inline-flex items-center gap-2 rounded-full border border-line px-[18px] py-[10px] text-sm hover:border-rit-orange hover:text-rit-orange-text"
+            class="text-rit-orange-text underline-offset-4 hover:underline"
           >
             Code: {projectEntry.data.name}
           </a>
         )}
       </div>
+
+      {hasBody && (
+        <section class="mb-14" aria-labelledby="about-heading">
+          <Subhead id="about-heading" class="mb-4">
+            {venue_type === "book" ? "About this book" : "Abstract"}
+          </Subhead>
+          <div class="prose max-w-none">
+            <Content />
+          </div>
+        </section>
+      )}
+
+      {authorEntries.length > 0 && (
+        <section aria-labelledby="authors-heading">
+          <Subhead id="authors-heading" class="mb-5">
+            Lab authors
+          </Subhead>
+          <PeopleList people={authorEntries} label="Author profile links" />
+        </section>
+      )}
     </article>
   </main>
 </BaseLayout>

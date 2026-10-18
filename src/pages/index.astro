@@ -4,6 +4,7 @@ import { getCollection } from "astro:content";
 import Nav from "../components/Nav.astro";
 import ProjectCard from "../components/ProjectCard.astro";
 import SectionHeader from "../components/SectionHeader.astro";
+import Subhead from "../components/Subhead.astro";
 import PersonCard from "../components/PersonCard.astro";
 import HeroPulse from "../components/HeroPulse.astro";
 import ContactLinks from "../components/ContactLinks.astro";
@@ -232,12 +233,9 @@ const pastCohort = peopleEntries
         <ul class="grid grid-cols-1 gap-x-12 md:grid-cols-2 lg:grid-cols-3" role="list">
           {researchAreas.map((area) => (
             <li class="border-t border-line pt-6 pb-12">
-              <h3
-                class="mb-3 text-text"
-                style="font-family: var(--font-display); font-size: 28px; line-height: 1.1; letter-spacing: -0.4px;"
-              >
+              <Subhead as="h3" size={28} class="mb-3">
                 {area.title}
-              </h3>
+              </Subhead>
               <p class="max-w-[42ch] text-[15px] leading-relaxed text-text-dim">{area.desc}</p>
             </li>
           ))}
@@ -252,12 +250,9 @@ const pastCohort = peopleEntries
           Open-source frameworks, peer-reviewed methods, and end-to-end systems, built by the
           current cohort and used by researchers beyond LDQIS.
         </SectionHeader>
-        <h3
-          class="mb-3 text-text"
-          style="font-family: var(--font-display); font-size: 36px; line-height: 1.1; letter-spacing: -0.5px;"
-        >
+        <Subhead as="h3" size={36} class="mb-3">
           Research projects
-        </h3>
+        </Subhead>
         <p class="mb-8 max-w-[64ch] text-text-dim">
           The software behind the lab's studies: frameworks, testbeds, and experiments with research
           questions and papers behind them.
@@ -269,12 +264,9 @@ const pastCohort = peopleEntries
         </div>
         {software.length > 0 && (
           <>
-            <h3
-              class="mt-16 mb-3 text-text"
-              style="font-family: var(--font-display); font-size: 36px; line-height: 1.1; letter-spacing: -0.5px;"
-            >
+            <Subhead as="h3" size={36} class="mt-16 mb-3">
               Agentic AI tools
-            </h3>
+            </Subhead>
             <p class="mb-8 max-w-[64ch] text-text-dim">
               Open-source tools for working with AI coding agents such as Claude Code, built for the
               lab's own research and free for anyone to use.
@@ -371,12 +363,9 @@ const pastCohort = peopleEntries
           made today's work possible.
         </SectionHeader>
 
-        <h3
-          class="mb-2 text-text"
-          style="font-family: var(--font-display); font-size: 36px; line-height: 1.1; letter-spacing: -0.5px;"
-        >
+        <Subhead as="h3" size={36} class="mb-2">
           Current team
-        </h3>
+        </Subhead>
         <p class="mb-8 text-text-dim">Working on federated learning and agentic AI.</p>
         <div class="grid grid-cols-1 gap-x-10 sm:grid-cols-2 md:grid-cols-4">
           {currentTeam.map((p) => (
@@ -384,13 +373,9 @@ const pastCohort = peopleEntries
           ))}
         </div>
 
-        <h3
-          id="alumni"
-          class="mt-16 mb-2 text-text"
-          style="font-family: var(--font-display); font-size: 36px; line-height: 1.1; letter-spacing: -0.5px;"
-        >
+        <Subhead as="h3" id="alumni" size={36} class="mt-16 mb-2">
           Past research cohort
-        </h3>
+        </Subhead>
         <p class="mb-8 max-w-[64ch] text-text-dim">
           These researchers led work that remains foundational to LDQIS today, including our Android
           security apps, the NSF Data Quality &amp; Security Evaluation Framework, and the
@@ -446,12 +431,9 @@ const pastCohort = peopleEntries
             return (
               <div>
                 <div class="mb-4 flex items-baseline justify-between gap-4">
-                  <h3
-                    class="text-text"
-                    style="font-family: var(--font-display); font-size: 28px; line-height: 1.1; letter-spacing: -0.4px;"
-                  >
+                  <Subhead as="h3" size={28}>
                     {level}
-                  </h3>
+                  </Subhead>
                   <span class="text-[13px] text-text-faint">{items.length} courses</span>
                 </div>
                 <ul class="border-t border-line">
@@ -561,9 +543,7 @@ const pastCohort = peopleEntries
                   Industry and research partners sponsor projects, students, and open-source
                   releases. Email Dr. Reznik's lab to start a conversation.
                 </p>
-                <div class="[&>div]:justify-start">
-                  <ContactLinks email={CONTACT_EMAIL} name="LDQIS" variant="pill" />
-                </div>
+                <ContactLinks email={CONTACT_EMAIL} name="LDQIS" variant="pill" />
               </div>
             </div>
           </div>

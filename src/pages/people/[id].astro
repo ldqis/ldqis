@@ -5,6 +5,7 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
 import ContactLinks from "../../components/ContactLinks.astro";
 import Avatar from "../../components/Avatar.astro";
 import Nav from "../../components/Nav.astro";
+import Subhead from "../../components/Subhead.astro";
 import { byRecency } from "../../lib/publications";
 
 // Detail pages for people give each researcher (current + past cohort)
@@ -51,8 +52,8 @@ const projectsContributed = allProjects
 const publicationsAuthored = allPublications
   .filter((p) => p.data.author_ids.some((ref) => ref.id === entry.id))
   .sort(byRecency);
-// Books lead (academic-CV convention: a monograph outweighs papers) and get a
-// highlighted card; journal/conference papers follow in the Publications list.
+// Books lead (academic-CV convention: a monograph outweighs papers); journal and conference
+// papers follow in the Publications list.
 const books = publicationsAuthored.filter((p) => p.data.venue_type === "book");
 const papers = publicationsAuthored.filter((p) => p.data.venue_type !== "book");
 const baseUrl = import.meta.env.BASE_URL.replace(/\/$/, "");
@@ -65,119 +66,93 @@ const baseUrl = import.meta.env.BASE_URL.replace(/\/$/, "");
   <Nav back={{ href: `${baseUrl}/#people`, label: "← All people" }} />
 
   <main id="main" class="relative z-[1] pt-16 pb-32">
-    <article class="mx-auto max-w-[640px] px-6 text-center">
-      <Avatar
-        avatar={avatar}
-        github={github}
-        initials={initials}
-        name={name}
-        size={96}
-        class="mx-auto mb-8"
-        transitionName={`avatar-${entry.id}`}
-      />
-
-      <div class="mb-3 text-xs tracking-[1.5px] text-rit-orange-text uppercase">{cohortLabel}</div>
-
-      <h1
-        class="mb-6"
-        style="font-family: var(--font-display); font-size: clamp(32px, 5vw, 48px); line-height: 1.1; letter-spacing: -1px;"
-      >
-        {name}
-      </h1>
-
-      <p class={`text-lg text-text-dim ${years ? "mb-2" : "mb-8"}`}>{role}</p>
-      {years && <p class="mb-8 text-sm text-text-dim">{years}</p>}
-
-      <ContactLinks
-        email={email}
-        scholar={scholar}
-        ieee={ieee}
-        website={website}
-        github={github}
-        linkedin={linkedin}
-        youtube={youtube}
-        orcid={orcid}
-        name={name}
-        variant="pill"
-      />
-
-      {books.length > 0 && (
-        <section class="mt-16 border-t border-line pt-8 text-left" aria-labelledby="books-heading">
-          <h2
-            id="books-heading"
-            class="mb-4 text-xs tracking-[1.5px] text-rit-orange-text uppercase"
+    <article class="mx-auto max-w-[960px] px-6">
+      <header class="grid grid-cols-1 items-center gap-8 md:grid-cols-[1fr_auto] md:gap-12">
+        <div class="md:order-first">
+          <p class="mb-3 text-sm font-medium text-rit-orange-text">{cohortLabel}</p>
+          <h1
+            class="mb-4"
+            style="font-family: var(--font-display); font-size: clamp(40px, 6vw, 64px); line-height: 1.05; letter-spacing: -1px;"
           >
-            Books
-          </h2>
-          <ul class="space-y-3" role="list">
-            {books.map((pub) => (
-              <li>
-                <a
-                  href={`${baseUrl}/publications/${pub.id}/`}
-                  class="group block rounded-lg border p-4"
-                  style="border-color: var(--color-rit-orange); background: color-mix(in oklab, var(--color-rit-orange) 7%, transparent);"
-                >
-                  <div class="mb-1 text-xs tracking-[1px] text-rit-orange-text uppercase">
-                    {pub.data.year} · {pub.data.venue}
-                  </div>
-                  <div class="text-base font-medium group-hover:text-rit-orange-text">
-                    {pub.data.title}
-                  </div>
-                </a>
-              </li>
-            ))}
-          </ul>
-        </section>
-      )}
+            {name}
+          </h1>
+          <p class="text-xl text-text-dim">{role}</p>
+          {years && <p class="mt-1 text-sm text-text-dim">{years}</p>}
+          <div class="mt-7">
+            <ContactLinks
+              email={email}
+              scholar={scholar}
+              ieee={ieee}
+              website={website}
+              github={github}
+              linkedin={linkedin}
+              youtube={youtube}
+              orcid={orcid}
+              name={name}
+              variant="pill"
+            />
+          </div>
+        </div>
+        <Avatar
+          avatar={avatar}
+          github={github}
+          initials={initials}
+          size={200}
+          class="order-first md:order-last"
+          transitionName={`avatar-${entry.id}`}
+        />
+      </header>
 
-      {papers.length > 0 && (
-        <section
-          class={`${books.length ? "mt-12" : "mt-16"} border-t border-line pt-8 text-left`}
-          aria-labelledby="publications-heading"
-        >
-          <h2
-            id="publications-heading"
-            class="mb-4 text-xs tracking-[1.5px] text-text-faint uppercase"
-          >
-            Publications
-          </h2>
-          <ul class="space-y-3" role="list">
-            {papers.map((pub) => (
-              <li>
-                <a
-                  href={`${baseUrl}/publications/${pub.id}/`}
-                  class="group block rounded-lg border border-line p-4 hover:border-rit-orange"
-                >
-                  <div class="mb-1 text-xs tracking-[1px] text-text-faint uppercase">
-                    {pub.data.year} · {pub.data.venue}
+      {[
+        { id: "books", title: "Books", items: books },
+        { id: "publications", title: "Publications", items: papers },
+      ]
+        .filter((g) => g.items.length > 0)
+        .map((g) => (
+          <section class="mt-16" aria-labelledby={`${g.id}-heading`}>
+            <Subhead id={`${g.id}-heading`} class="mb-5">
+              {g.title}
+            </Subhead>
+            <ul class="border-t border-line" role="list">
+              {g.items.map((pub) => (
+                <li class="grid grid-cols-1 gap-x-6 gap-y-1 border-b border-line py-4 sm:grid-cols-[72px_1fr]">
+                  <span
+                    class="text-text-faint"
+                    style="font-family: var(--font-display); font-size: 22px; line-height: 1.2;"
+                  >
+                    {pub.data.year}
+                  </span>
+                  <div>
+                    <a
+                      href={`${baseUrl}/publications/${pub.id}/`}
+                      class="text-[16px] leading-snug font-medium hover:text-rit-orange-text"
+                    >
+                      {pub.data.title}
+                    </a>
+                    <p class="mt-1 text-[13px] text-text-faint">{pub.data.venue}</p>
                   </div>
-                  <div class="text-base text-text-dim group-hover:text-rit-orange-text">
-                    {pub.data.title}
-                  </div>
-                </a>
-              </li>
-            ))}
-          </ul>
-        </section>
-      )}
+                </li>
+              ))}
+            </ul>
+          </section>
+        ))}
 
       {projectsContributed.length > 0 && (
-        <section
-          class="mt-12 border-t border-line pt-8 text-left"
-          aria-labelledby="projects-heading"
-        >
-          <h2 id="projects-heading" class="mb-4 text-xs tracking-[1.5px] text-text-faint uppercase">
+        <section class="mt-16" aria-labelledby="projects-heading">
+          <Subhead id="projects-heading" class="mb-5">
             Projects
-          </h2>
-          <ul class="flex flex-wrap gap-3" role="list">
+          </Subhead>
+          <ul class="grid grid-cols-1 gap-x-8 border-t border-line sm:grid-cols-2" role="list">
             {projectsContributed.map((project) => (
-              <li>
+              <li class="border-b border-line py-4">
                 <a
                   href={`${baseUrl}/projects/${project.id}/`}
-                  class="inline-flex items-center gap-2 rounded-full border border-line px-[14px] py-[8px] text-sm hover:border-rit-orange hover:text-rit-orange-text"
+                  class="hover:text-rit-orange-text"
+                  style="font-family: var(--font-display); font-size: 22px; letter-spacing: -0.3px;"
                 >
                   {project.data.name}
                 </a>
+                <p class="text-[13px] text-text-dim">{project.data.tagline}</p>
               </li>
             ))}
           </ul>

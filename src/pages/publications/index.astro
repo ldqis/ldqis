@@ -23,7 +23,7 @@ const typeLabel: Record<string, string> = {
   book: "Book",
   chapter: "Chapter",
   journal: "Journal",
-  conference: "Conf.",
+  conference: "Conference",
 };
 ---
 
@@ -35,7 +35,7 @@ const typeLabel: Record<string, string> = {
 
   <main id="main" class="relative z-[1] pt-16 pb-32">
     <div class="mx-auto max-w-[920px] px-6">
-      <div class="mb-4 text-xs tracking-[1.5px] text-rit-orange-text uppercase">Publications</div>
+      <p class="mb-4 text-sm font-medium text-rit-orange-text">Publications</p>
       <h1
         class="mb-6"
         style="font-family: var(--font-display); font-size: clamp(36px, 5vw, 56px); line-height: 1.05; letter-spacing: -1px;"
@@ -62,14 +62,14 @@ const typeLabel: Record<string, string> = {
             >
               {year}
             </h2>
-            <span class="text-[12px] tracking-[1px] text-text-faint uppercase">
+            <span class="text-[13px] text-text-faint">
               {byYear.get(year)!.length} {byYear.get(year)!.length === 1 ? "paper" : "papers"}
             </span>
           </div>
           <ul class="flex flex-col gap-5">
             {byYear.get(year)!.map((p) => (
-              <li class="grid grid-cols-[64px_1fr] gap-x-4">
-                <span class="mt-[2px] text-[11px] tracking-[0.5px] text-text-faint uppercase">
+              <li class="grid grid-cols-[88px_1fr] gap-x-4">
+                <span class="mt-[2px] text-[13px] text-text-faint">
                   {typeLabel[p.type] ?? p.type}
                 </span>
                 <div class="min-w-0">
