@@ -5,8 +5,20 @@ longer-term plan lives in [ROADMAP.md](./ROADMAP.md); git history has the full r
 
 ## In progress
 
-Nothing in flight. The site moved to the `ldqis` org and to `dataqualitylabs.com` on
-2026-10-16; setup reference in [MAINTAINING.md](./MAINTAINING.md).
+**PR #195, CMS People form** (branch `feat/cms-ux`, worktree `.claude/worktrees/cms-ux`). All
+local gates passed on 2026-10-18 (build, lint, check, unit 61/61, e2e 587/587). Before merge:
+
+1. Run an independent review (one was cut off by a restart), fix what it finds, merge on green.
+2. After deploy, open the live `/admin`, sign in, and confirm the People form loads with no
+   config errors and that the year dropdowns run 2003 to this year plus Present.
+
+Local CMS testing without a GitHub sign-in: copy `src/content` to `public/__seed/` (never
+commit it), write it into the browser's private file storage with an empty `.git` folder,
+override `window.showDirectoryPicker` to return `navigator.storage.getDirectory()`, then choose
+"Work with Local Repository" on `/admin/index.html` under `astro dev`.
+
+**Next after #195:** publish CMS edits straight to `main`. Sveltia v0.248.0 ships the fix
+(sveltia/sveltia-cms#1094); see the ROADMAP backlog entry.
 
 ## Known issues
 
