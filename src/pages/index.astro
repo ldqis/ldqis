@@ -164,7 +164,8 @@ const pastCohort = peopleEntries
     <header class="relative pt-[120px] pb-[100px]">
       <div class="mx-auto max-w-[1200px] px-6">
         <p class="mb-8 text-sm text-text-dim">
-          Laboratory of Data Quality and Intelligent Security, Rochester Institute of Technology
+          Laboratory of Data Quality and Intelligent Security, Department of Computer Science,
+          Rochester Institute of Technology
         </p>
         {/* The <br /> sets the two lines; a ch-based max-width would wrap differently in the
             fallback font than in Instrument Serif and shift the page when the font arrives. */}
@@ -206,13 +207,15 @@ const pastCohort = peopleEntries
           </div>
         )}
 
-        {/* research(2026-06): the publication count is the live length of the imported record
-            (src/data/publications-all.json), the figure /publications shows; "+" hedges OpenAlex
-            coverage gaps. research(2026-05): Dr. Reznik joined RIT around 2003, so "over 20
-            years" rounds down. The project count is the projects collection. */}
+        {/* research(2026-05): Dr. Reznik joined RIT around 2003, so "since 2003" covers the lab's
+            RIT era. research(2026-06): the publication count is his whole imported record
+            (src/data/publications-all.json, the figure /publications shows), which starts in 1981
+            and includes books and chapters, so it is attributed to his record, not to the lab's
+            RIT years; "+" hedges OpenAlex coverage gaps. The project count is the collection. */}
         <p class="mt-8 max-w-[64ch] text-[15px] text-text-dim">
-          Over 20 years at RIT, the lab has published {allPubs.length}+ peer-reviewed papers,
-          trained 25+ researchers, and released {projects.length} open-source projects.
+          Since 2003 the lab has trained 25+ researchers and released {projects.length} open-source
+          projects, and Dr. Reznik's publication record spans {allPubs.length}+ papers, books, and
+          chapters.
         </p>
       </div>
     </header>
@@ -291,7 +294,7 @@ const pastCohort = peopleEntries
           </a>{" "}
           for citation metrics.
         </SectionHeader>
-        <ol class="divide-y divide-line border-y border-line">
+        <ol class="divide-y divide-line border-y border-line" role="list">
           {publications.map((pub) => (
             <li class="grid grid-cols-1 gap-x-8 gap-y-2 py-7 md:grid-cols-[88px_1fr_auto]">
               <div
@@ -380,7 +383,8 @@ const pastCohort = peopleEntries
           These researchers led work that remains foundational to LDQIS today, including our Android
           security apps, the NSF Data Quality &amp; Security Evaluation Framework, and the
           wearable-sensors and computational-intelligence research lines that preceded today's
-          federated learning work.
+          federated learning work. Their topics ranged from mobile security and Android attacks to
+          wearable sensors, data quality, and computational intelligence.
         </p>
         <div class="grid grid-cols-1 gap-x-10 sm:grid-cols-2 md:grid-cols-4">
           {pastCohort.map((p) => (
@@ -413,12 +417,15 @@ const pastCohort = peopleEntries
             const items = courses.filter((c) => c.level === level);
             return (
               <div>
-                <h3
-                  class="mb-4 text-text"
-                  style="font-family: var(--font-display); font-size: 28px; line-height: 1.1; letter-spacing: -0.4px;"
-                >
-                  {level}
-                </h3>
+                <div class="mb-4 flex items-baseline justify-between gap-4">
+                  <h3
+                    class="text-text"
+                    style="font-family: var(--font-display); font-size: 28px; line-height: 1.1; letter-spacing: -0.4px;"
+                  >
+                    {level}
+                  </h3>
+                  <span class="text-[13px] text-text-faint">{items.length} courses</span>
+                </div>
                 <ul class="border-t border-line">
                   {items.map((c) => (
                     <li class="flex flex-col gap-1 border-b border-line py-4 sm:flex-row sm:items-baseline sm:gap-4">
@@ -443,7 +450,7 @@ const pastCohort = peopleEntries
           LDQIS research has been supported by the National Science Foundation, the U.S. Department
           of Defense, and CRDF Global with the U.S. Department of State.
         </SectionHeader>
-        <ol class="divide-y divide-line border-y border-line">
+        <ol class="divide-y divide-line border-y border-line" role="list">
           {funders.map((f) => (
             <li class="grid grid-cols-1 gap-x-8 gap-y-2 py-6 md:grid-cols-[1fr_auto] md:items-baseline">
               <div>

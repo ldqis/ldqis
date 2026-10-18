@@ -17,17 +17,26 @@ interface Props {
 const { stats, href } = Astro.props;
 const view = summarize(stats);
 const max = Math.max(1, ...view.weeks.map((w) => w.count));
+// A strip only reads as a record with at least two weeks and some activity; otherwise the
+// caption carries the count alone.
+const drawn = view.weeks.length >= 2 && view.weeks.some((w) => w.count > 0);
 ---
 
 <figure class="hero-pulse">
-  <div class="bars" aria-hidden="true" style={`--n: ${view.weeks.length}`}>
-    {view.weeks.map((w, i) => (
-      <span class:list={[w.count === 0 && "zero"]} style={`--h: ${w.count / max}; --i: ${i}`} />
-    ))}
-  </div>
-  <figcaption class="mt-4 flex flex-wrap items-baseline justify-between gap-x-8 gap-y-2">
+  {drawn && (
+    <div class="bars" aria-hidden="true" style={`--n: ${view.weeks.length}`}>
+      {view.weeks.map((w, i) => (
+        <span class:list={[w.count === 0 && "zero"]} style={`--h: ${w.count / max}; --i: ${i}`} />
+      ))}
+    </div>
+  )}
+  <figcaption
+    class:list={["flex flex-wrap items-baseline justify-between gap-x-8 gap-y-2", drawn && "mt-4"]}
+  >
     <span class="text-sm text-text-dim">
-      Each bar is a week of federated-learning experiments in InteFL:{" "}
+      {drawn
+        ? "Each bar is a week of federated-learning experiments in InteFL:"
+        : "Federated-learning experiments in InteFL:"}{" "}
       {view.total.toLocaleString("en-US")} runs{view.since && ` since ${view.since}`}.
     </span>
     <a href={href} class="text-sm text-rit-orange-text underline-offset-4 hover:underline">

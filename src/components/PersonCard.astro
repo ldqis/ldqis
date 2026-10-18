@@ -1,6 +1,7 @@
 ---
 // One person on the homepage team grid: photo, name (linking to their page), role, links.
-// `compact` is the smaller past-cohort variant.
+// `compact` is the smaller past-cohort variant. The lab lead spans two columns and uses the
+// width for a larger photo beside the name.
 import type { CollectionEntry } from "astro:content";
 import Avatar from "./Avatar.astro";
 import ContactLinks from "./ContactLinks.astro";
@@ -12,10 +13,16 @@ interface Props {
 
 const { p, compact = false } = Astro.props;
 const base = import.meta.env.BASE_URL.replace(/\/$/, "");
+const lead = Boolean(p.lead) && !compact;
+const href = `${base}/people/${p.id}/`;
 ---
 
 <div
-  class:list={["border-t border-line pt-5", compact ? "pb-7" : "pb-9", p.lead && "sm:col-span-2"]}
+  class:list={[
+    "border-t border-line pt-5",
+    compact ? "pb-7" : "pb-9",
+    lead && "sm:col-span-2 sm:flex sm:items-start sm:gap-6",
+  ]}
 >
   <div class:list={["flex gap-4", compact ? "items-center" : "flex-col items-start"]}>
     <Avatar
@@ -23,31 +30,44 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, "");
       github={p.github}
       initials={p.initials}
       name={p.name}
-      size={compact ? 40 : 64}
+      size={compact ? 40 : lead ? 112 : 64}
       transitionName={`avatar-${p.id}`}
     />
-    <a
-      href={`${base}/people/${p.id}/`}
-      class:list={[
-        "hover:text-rit-orange-text",
-        compact ? "text-[15px] font-medium" : "text-[22px] leading-tight",
-      ]}
-      style={compact ? undefined : "font-family: var(--font-display); letter-spacing: -0.3px;"}
-    >
-      {p.name}
-    </a>
+    {!lead && (
+      <a
+        href={href}
+        class:list={[
+          "hover:text-rit-orange-text",
+          compact ? "text-[15px] font-medium" : "text-[22px] leading-tight",
+        ]}
+        style={compact ? undefined : "font-family: var(--font-display); letter-spacing: -0.3px;"}
+      >
+        {p.name}
+      </a>
+    )}
   </div>
-  <p class="mt-2 text-[13px] text-text-dim">{p.role}</p>
-  {p.years && <p class="mt-1 text-xs text-text-dim">{p.years}</p>}
-  <ContactLinks
-    email={p.email}
-    scholar={p.scholar}
-    ieee={p.ieee}
-    website={p.website}
-    github={p.github}
-    linkedin={p.linkedin}
-    youtube={p.youtube}
-    orcid={p.orcid}
-    name={p.name}
-  />
+  <div class:list={[lead && "mt-4 sm:mt-1"]}>
+    {lead && (
+      <a
+        href={href}
+        class="text-[32px] leading-tight hover:text-rit-orange-text"
+        style="font-family: var(--font-display); letter-spacing: -0.5px;"
+      >
+        {p.name}
+      </a>
+    )}
+    <p class:list={["text-text-dim", lead ? "mt-1 text-[15px]" : "mt-2 text-[13px]"]}>{p.role}</p>
+    {p.years && <p class="mt-1 text-xs text-text-dim">{p.years}</p>}
+    <ContactLinks
+      email={p.email}
+      scholar={p.scholar}
+      ieee={p.ieee}
+      website={p.website}
+      github={p.github}
+      linkedin={p.linkedin}
+      youtube={p.youtube}
+      orcid={p.orcid}
+      name={p.name}
+    />
+  </div>
 </div>
