@@ -14,7 +14,9 @@ Nothing in flight. The site moved to the `ldqis` org and to `dataqualitylabs.com
   its latest release and no longer updated) and `@tailwindcss/typography` through
   `postcss-selector-parser`; `npm audit fix --force` would downgrade `@lhci/cli` and
   `@tailwindcss/typography`, so leave them. `@puppeteer/browsers`, `tmp`, and `uuid` are pinned
-  forward in `package.json` `overrides`.
+  forward in `package.json` `overrides`. `sprintf-js` has no patched release; it came in only
+  through `js-yaml@3`'s command-line tool (`argparse@1`), which `@lhci/utils` never runs, so an
+  override gives that `js-yaml` `argparse@2`, which has no dependencies.
 - `ldqis-cms-auth` has no Dependabot and pins an old wrangler; its `pnpm audit` findings are
   all in build and lint tooling, not the deployed Worker.
 
