@@ -1,46 +1,40 @@
 ---
-// One person on the homepage team grid: photo, name (linking to their page), role, links.
-// `compact` is the smaller past-cohort variant. The lab lead spans two columns and uses the
-// width for a larger photo beside the name.
+// One current-team member on the homepage: photo, name (linking to their page), role, links.
+// The lab lead spans two columns and uses the width for a larger photo beside the name.
 import type { CollectionEntry } from "astro:content";
 import Avatar from "./Avatar.astro";
 import ContactLinks from "./ContactLinks.astro";
 
 interface Props {
   p: CollectionEntry<"people">["data"] & { id: string };
-  compact?: boolean;
 }
 
-const { p, compact = false } = Astro.props;
+const { p } = Astro.props;
 const base = import.meta.env.BASE_URL.replace(/\/$/, "");
-const lead = Boolean(p.lead) && !compact;
+const lead = Boolean(p.lead);
 const href = `${base}/people/${p.id}/`;
 ---
 
 <div
   class:list={[
-    "border-t border-line pt-5",
-    compact ? "pb-7" : "pb-9",
+    "border-t border-line pt-5 pb-9",
     lead && "sm:col-span-2 sm:flex sm:items-start sm:gap-6",
   ]}
 >
-  <div class:list={["flex gap-4", compact ? "items-center" : "flex-col items-start"]}>
+  <div class="flex flex-col items-start gap-4">
     <Avatar
       avatar={p.avatar}
       github={p.github}
       initials={p.initials}
       name={p.name}
-      size={compact ? 40 : lead ? 112 : 64}
+      size={lead ? 112 : 64}
       transitionName={`avatar-${p.id}`}
     />
     {!lead && (
       <a
         href={href}
-        class:list={[
-          "hover:text-rit-orange-text",
-          compact ? "text-[15px] font-medium" : "text-[22px] leading-tight",
-        ]}
-        style={compact ? undefined : "font-family: var(--font-display); letter-spacing: -0.3px;"}
+        class="text-[22px] leading-tight hover:text-rit-orange-text"
+        style="font-family: var(--font-display); letter-spacing: -0.3px;"
       >
         {p.name}
       </a>

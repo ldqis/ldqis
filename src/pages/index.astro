@@ -398,11 +398,27 @@ const pastCohort = peopleEntries
           federated learning work. Their topics ranged from mobile security and Android attacks to
           wearable sensors, data quality, and computational intelligence.
         </p>
-        <div class="grid grid-cols-1 gap-x-10 sm:grid-cols-2 md:grid-cols-4">
+        {/* A compact text list: past members have no photos, so initials circles added noise,
+            not information. Each name links to the person's page with their full details. */}
+        <ul
+          class="grid grid-cols-1 gap-x-10 border-t border-line sm:grid-cols-2 lg:grid-cols-3"
+          role="list"
+        >
           {pastCohort.map((p) => (
-            <PersonCard p={p} compact />
+            <li class="border-b border-line py-3">
+              <a
+                href={`${import.meta.env.BASE_URL.replace(/\/$/, "")}/people/${p.id}/`}
+                class="text-[15px] font-medium text-text hover:text-rit-orange-text"
+              >
+                {p.name}
+              </a>
+              <p class="text-[13px] text-text-dim">
+                {p.role}
+                {p.years && <span>, {p.years}</span>}
+              </p>
+            </li>
           ))}
-        </div>
+        </ul>
       </div>
     </section>
 
@@ -496,10 +512,10 @@ const pastCohort = peopleEntries
     </section>
 
     {/* GET INVOLVED */}
-    <section id="support" class="relative py-16 md:py-[100px]">
+    <section id="support" class="relative pt-4 pb-16 md:pt-8 md:pb-24">
       <div class="mx-auto max-w-[1200px] px-6">
         <div
-          class="relative overflow-hidden rounded-[14px] border border-line px-6 py-14 text-center md:px-12 md:py-16"
+          class="relative overflow-hidden rounded-[14px] border border-line px-6 py-12 text-center md:px-12 md:py-14"
           style="background: linear-gradient(135deg, var(--color-bg-soft), var(--color-bg-elev));"
         >
           <div
