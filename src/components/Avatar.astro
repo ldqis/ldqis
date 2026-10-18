@@ -4,6 +4,8 @@
 //   2. the person's GitHub avatar, derived from their `github` handle
 //   3. their initials in the lab's gradient circle (the original look)
 // Square container + object-cover means non-square uploads still crop cleanly.
+// The photo is decorative (alt=""): every use sits beside the person's name as text or a link,
+// so naming the image too made screen readers announce each name twice.
 import { Image } from "astro:assets";
 import type { ImageMetadata } from "astro";
 
@@ -11,20 +13,11 @@ interface Props {
   avatar?: ImageMetadata;
   github?: string;
   initials: string;
-  name: string;
   size?: number; // rendered px (square); default suits the team-grid cards
   class?: string;
   transitionName?: string; // set → the avatar morphs across navigation (view transitions)
 }
-const {
-  avatar,
-  github,
-  initials,
-  name,
-  size = 48,
-  class: extra = "",
-  transitionName,
-} = Astro.props;
+const { avatar, github, initials, size = 48, class: extra = "", transitionName } = Astro.props;
 const boxStyle = `width:${size}px;height:${size}px${transitionName ? `;view-transition-name:${transitionName}` : ""}`;
 // GitHub serves a square avatar at github.com/<handle>.png; request ~2× for retina.
 const ghSrc = github ? `https://github.com/${github}.png?size=${Math.min(size * 2, 460)}` : null;
@@ -32,16 +25,11 @@ const ghSrc = github ? `https://github.com/${github}.png?size=${Math.min(size * 
 
 <span class={`inline-flex shrink-0 overflow-hidden rounded-full ${extra}`} style={boxStyle}>
   {avatar ? (
-    <Image
-      src={avatar}
-      alt={name}
-      width={Math.max(size * 2, 96)}
-      class="h-full w-full object-cover"
-    />
+    <Image src={avatar} alt="" width={Math.max(size * 2, 96)} class="h-full w-full object-cover" />
   ) : ghSrc ? (
     <img
       src={ghSrc}
-      alt={name}
+      alt=""
       width={size}
       height={size}
       loading="lazy"

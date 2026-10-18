@@ -40,7 +40,9 @@ const stats = (await getCollection("experimentStats")).find((s) => s.id === entr
 
   <main id="main" class="relative z-[1] pt-16 pb-32">
     <article class="mx-auto max-w-[800px] px-6">
-      <p class="mb-4 text-sm font-medium text-rit-orange-text">{tags.join(", ")}</p>
+      {tags.length > 0 && (
+        <p class="mb-4 text-sm font-medium text-rit-orange-text">{tags.join(", ")}</p>
+      )}
 
       <h1
         class="mb-3"
@@ -53,7 +55,9 @@ const stats = (await getCollection("experimentStats")).find((s) => s.id === entr
 
       <div class="prose prose-lg mb-6 max-w-none" set:html={desc} />
 
-      <p class="mb-8 text-sm text-text-faint">Built with {stack.join(", ")}</p>
+      {stack.length > 0 && (
+        <p class="mb-8 text-sm text-text-faint">Built with {stack.join(", ")}</p>
+      )}
 
       <div class="flex flex-wrap gap-x-6 gap-y-2 border-t border-line pt-6 text-[15px]">
         {links.map((l) => (
