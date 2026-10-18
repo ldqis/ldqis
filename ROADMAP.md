@@ -86,6 +86,13 @@ ideas. These were weighed and declined, recorded so they aren't re-proposed:
 
 Highlights below; full history in git.
 
+- **2026-10-18: Projects grouped as research, earlier, and software.** Projects take a `kind`
+  (research or software) and a `status` (active or paused), both editable in the CMS. The
+  homepage lists active research, then earlier projects, then a software section for tools the
+  lab maintains, and a paused project's page says so. research(2026-10): lab sites list the
+  software they maintain apart from their research projects. Sources:
+  labs.csc.uni-frankfurt.de, ling.uni-konstanz.de computational-linguistics lab.
+
 - **2026-10-17: InteFL experiment record.** The InteFL project page shows the lab's experiment
   database: a one-line summary, a weekly chart that reads out by pointer or keyboard, and what
   the runs covered (attacks by family, datasets by domain and partition). The homepage card

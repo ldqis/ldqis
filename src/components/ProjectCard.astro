@@ -1,0 +1,72 @@
+---
+// One project card on the homepage. `compact` is the smaller software-tool variant.
+import type { CollectionEntry } from "astro:content";
+
+interface Props {
+  p: CollectionEntry<"projects">["data"] & { id: string };
+  experimentTotal?: number;
+  compact?: boolean;
+}
+
+const { p, experimentTotal, compact = false } = Astro.props;
+const base = import.meta.env.BASE_URL.replace(/\/$/, "");
+---
+
+<article
+  class:list={[
+    "flex flex-col rounded-[14px] border border-line bg-bg-elev transition-all hover:-translate-y-[2px] hover:border-rit-orange",
+    compact ? "p-6" : "p-8",
+  ]}
+>
+  <div class="mb-2 flex flex-wrap items-center gap-3">
+    {p.tags.map((t) => (
+      <span
+        class="rounded-full border px-[10px] py-[3px] text-[11px] tracking-[1px] uppercase"
+        style="color: var(--color-rit-orange-text); background: color-mix(in oklab, var(--color-rit-orange) 8%, transparent); border-color: color-mix(in oklab, var(--color-rit-orange) 8%, transparent);"
+      >
+        {t}
+      </span>
+    ))}
+  </div>
+  <div class="mb-[18px] font-mono text-[11px] text-text-faint">{p.stack.join(" · ")}</div>
+  <div
+    class="mb-[6px] leading-[1.1]"
+    style={`font-family: var(--font-display); font-size: ${compact ? 24 : 28}px; letter-spacing: -0.5px;`}
+  >
+    {p.name}
+  </div>
+  <div class="mb-4 text-sm text-text-dim italic">{p.tagline}</div>
+  <p class="mb-6 flex-grow text-[15px] text-text-dim" set:html={p.desc} />
+  {experimentTotal !== undefined && (
+    <a
+      href={`${base}/projects/${p.id}/#experiments`}
+      class="mb-6 self-start text-sm text-text hover:text-rit-orange-text"
+    >
+      <span style="font-family: var(--font-display); font-size: 22px;">
+        {experimentTotal.toLocaleString("en-US")}
+      </span>{" "}
+      experiments run so far<span class="sr-only"> with {p.name}</span>
+    </a>
+  )}
+  <div class="flex flex-wrap gap-[14px] border-t border-line pt-[18px] text-[13px]">
+    {p.links.map((l) => (
+      <a
+        href={l.href}
+        target="_blank"
+        rel="noopener"
+        class="inline-flex items-center gap-1 hover:underline"
+        style="color: var(--color-rit-orange-text);"
+      >
+        {l.label}
+        <span class="sr-only"> ({p.name})</span>
+      </a>
+    ))}
+    <a
+      href={`${base}/projects/${p.id}/`}
+      class="ml-auto inline-flex items-center gap-1 text-text-dim hover:text-rit-orange-text"
+      aria-label={`Project page for ${p.name}`}
+    >
+      Project page →
+    </a>
+  </div>
+</article>

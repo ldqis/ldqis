@@ -202,6 +202,20 @@ collections:
         search_fields: [name]
         display_fields: [name]
       - { label: Order, name: order, widget: number, value_type: int, default: 100 }
+      - label: Kind
+        name: kind
+        widget: select
+        default: research
+        options:
+          - { label: Research project, value: research }
+          - { label: Software tool, value: software }
+      - label: Status
+        name: status
+        widget: select
+        default: active
+        options:
+          - { label: Active, value: active }
+          - { label: Paused, value: paused }
 
   - name: news
     label: News

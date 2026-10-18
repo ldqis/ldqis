@@ -4,6 +4,7 @@ import { getCollection } from "astro:content";
 import ContactLinks from "../components/ContactLinks.astro";
 import Avatar from "../components/Avatar.astro";
 import Nav from "../components/Nav.astro";
+import ProjectCard from "../components/ProjectCard.astro";
 import { byRecency } from "../lib/publications";
 import { SCHOLAR_URL } from "../lib/site-links";
 import allPubs from "../data/publications-all.json";
@@ -125,6 +126,9 @@ const projectEntries = await getCollection("projects");
 const projects = projectEntries
   .sort((a, b) => a.data.order - b.data.order)
   .map((entry) => ({ ...entry.data, id: entry.id }));
+const research = projects.filter((p) => p.kind === "research" && p.status === "active");
+const earlier = projects.filter((p) => p.kind === "research" && p.status === "paused");
+const software = projects.filter((p) => p.kind === "software");
 
 // Projects with an experiment database get a run count on their card.
 const experimentTotals = new Map(
@@ -287,64 +291,37 @@ const pastCohort = peopleEntries
           current cohort and used by researchers beyond LDQIS.
         </p>
         <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
-          {projects.map((p) => (
-            <article class="flex flex-col rounded-[14px] border border-line bg-bg-elev p-8 transition-all hover:-translate-y-[2px] hover:border-rit-orange">
-              <div class="mb-2 flex flex-wrap items-center gap-3">
-                {p.tags.map((t) => (
-                  <span
-                    class="rounded-full border px-[10px] py-[3px] text-[11px] tracking-[1px] uppercase"
-                    style="color: var(--color-rit-orange-text); background: color-mix(in oklab, var(--color-rit-orange) 8%, transparent); border-color: color-mix(in oklab, var(--color-rit-orange) 8%, transparent);"
-                  >
-                    {t}
-                  </span>
-                ))}
-              </div>
-              <div class="mb-[18px] font-mono text-[11px] text-text-faint">
-                {p.stack.join(" · ")}
-              </div>
-              <div
-                class="mb-[6px] leading-[1.1]"
-                style="font-family: var(--font-display); font-size: 28px; letter-spacing: -0.5px;"
-              >
-                {p.name}
-              </div>
-              <div class="mb-4 text-sm text-text-dim italic">{p.tagline}</div>
-              <p class="mb-6 flex-grow text-[15px] text-text-dim" set:html={p.desc} />
-              {experimentTotals.has(p.id) && (
-                <a
-                  href={`${import.meta.env.BASE_URL.replace(/\/$/, "")}/projects/${p.id}/#experiments`}
-                  class="mb-6 self-start text-sm text-text hover:text-rit-orange-text"
-                >
-                  <span style="font-family: var(--font-display); font-size: 22px;">
-                    {experimentTotals.get(p.id)!.toLocaleString("en-US")}
-                  </span>{" "}
-                  experiments run so far<span class="sr-only"> with {p.name}</span>
-                </a>
-              )}
-              <div class="flex flex-wrap gap-[14px] border-t border-line pt-[18px] text-[13px]">
-                {p.links.map((l) => (
-                  <a
-                    href={l.href}
-                    target="_blank"
-                    rel="noopener"
-                    class="inline-flex items-center gap-1 hover:underline"
-                    style="color: var(--color-rit-orange-text);"
-                  >
-                    {l.label}
-                    <span class="sr-only"> ({p.name})</span>
-                  </a>
-                ))}
-                <a
-                  href={`${import.meta.env.BASE_URL.replace(/\/$/, "")}/projects/${p.id}/`}
-                  class="ml-auto inline-flex items-center gap-1 text-text-dim hover:text-rit-orange-text"
-                  aria-label={`Project page for ${p.name}`}
-                >
-                  Project page →
-                </a>
-              </div>
-            </article>
+          {research.map((p) => (
+            <ProjectCard p={p} experimentTotal={experimentTotals.get(p.id)} />
           ))}
         </div>
+        {earlier.length > 0 && (
+          <>
+            <h3 class="mt-20 mb-3 text-2xl font-medium text-text">Earlier projects</h3>
+            <p class="mb-8 max-w-[64ch] text-text-dim">
+              No longer in active development. The code and documentation stay public.
+            </p>
+            <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
+              {earlier.map((p) => (
+                <ProjectCard p={p} experimentTotal={experimentTotals.get(p.id)} />
+              ))}
+            </div>
+          </>
+        )}
+        {software.length > 0 && (
+          <>
+            <h3 class="mt-20 mb-3 text-2xl font-medium text-text">Software</h3>
+            <p class="mb-8 max-w-[64ch] text-text-dim">
+              Tools built in the lab for everyday research and development work, free for anyone to
+              use.
+            </p>
+            <div class="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
+              {software.map((p) => (
+                <ProjectCard p={p} compact />
+              ))}
+            </div>
+          </>
+        )}
       </div>
     </section>
 
