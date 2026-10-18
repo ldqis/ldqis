@@ -1,13 +1,5 @@
-/* research(2026-10): Fontsource packages self-host the fonts from npm, so no visitor IP
-   reaches Google; its CSS carries `unicode-range`, so only the subsets a page needs load.
-   Static weight files keep the exact weights the Google link served (Fontsource suggests
-   the variable package first; swap to it to cut the file count). */
-@import "@fontsource/inter/400.css";
-@import "@fontsource/inter/500.css";
-@import "@fontsource/inter/600.css";
-@import "@fontsource/inter/700.css";
-@import "@fontsource/instrument-serif/400.css";
-@import "@fontsource/instrument-serif/400-italic.css";
+/* Fonts are self-hosted from the Fontsource npm packages and declared through Astro's Fonts
+   API (astro.config.mjs), which adds metric-matched fallbacks; <Font> in BaseLayout emits them. */
 @import "tailwindcss";
 @plugin "@tailwindcss/typography";
 
@@ -50,8 +42,8 @@
   --color-text-faint: #6c6863;
 
   /* fonts — Instrument Serif for display, Inter for body */
-  --font-display: "Instrument Serif", ui-serif, Georgia, serif;
-  --font-sans: "Inter", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-display: var(--font-instrument-serif);
+  --font-sans: var(--font-inter);
 }
 
 /* dark mode tokens. opt-in via [data-theme="dark"] on <html> so the

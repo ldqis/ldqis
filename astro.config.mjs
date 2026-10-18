@@ -1,5 +1,5 @@
 // @ts-check
-import { defineConfig } from "astro/config";
+import { defineConfig, fontProviders } from "astro/config";
 import sitemap from "@astrojs/sitemap";
 import tailwindcss from "@tailwindcss/vite";
 import { createHash } from "node:crypto";
@@ -113,7 +113,82 @@ const pagefindDev = () => {
   };
 };
 
+// research(2026-10): web fonts that swap in after first paint reflow the hero and shift the
+// stats strip (Lighthouse CLS ~0.10, all of it font loading). Astro's Fonts API emits
+// fallback faces whose metrics are adjusted to match each font, so the swap no longer moves
+// text. The files stay the self-hosted Fontsource ones from npm: this reads Fontsource's own
+// CSS to list every file with its weight, style and unicode-range. No font is fetched at build.
+// BaseLayout preloads the body and heading faces (Inter 400, Instrument Serif 400) so text
+// does not rewrap when they arrive. Astro's local provider preloads by weight and style, not
+// subset, so each family keeps only the subsets the site uses: Latin, plus Greek in Inter for
+// the α in the experiment record. The site has no extended-Latin text; add "latin-ext" here
+// if it ever does.
+// Source: https://docs.astro.build/en/guides/fonts/
+/** @param {string} pkg @param {string[]} cssFiles @param {string[]} subsets */
+const fontsourceVariants = (pkg, cssFiles, subsets) =>
+  cssFiles.flatMap((css) => {
+    const dir = `./node_modules/@fontsource/${pkg}`;
+    const text = readFileSync(new URL(`${dir}/${css}`, import.meta.url), "utf8");
+    // Each face is preceded by a comment naming it: /* inter-latin-ext-400-normal */
+    const face = new RegExp(
+      `/\\* ${pkg}-([a-z-]+)-\\d+-(?:normal|italic) \\*/\\s*@font-face \\{([^}]*)\\}`,
+      "g",
+    );
+    // Latin first: Astro derives the fallback's metrics from the first file it is given.
+    return [...text.matchAll(face)]
+      .filter(([, subset]) => subsets.includes(subset))
+      .sort(([, a], [, b]) => subsets.indexOf(a) - subsets.indexOf(b))
+      .map(([, , body]) => {
+        const get = (/** @type {string} */ k) =>
+          body.match(new RegExp(`${k}:\\s*([^;]+);`))?.[1].trim();
+        const file = body.match(/url\(\.\/(files\/[^)]+\.woff2)\)/)?.[1];
+        const range = get("unicode-range");
+        if (!file || !range) throw new Error(`unreadable @font-face in ${pkg}/${css}`);
+        return {
+          weight: Number(get("font-weight")),
+          style: /** @type {"normal" | "italic"} */ (get("font-style")),
+          src: /** @type {[string]} */ ([`${dir}/${file}`]),
+          display: /** @type {"swap"} */ ("swap"),
+          unicodeRange: /** @type {[string, ...string[]]} */ (range.split(",")),
+        };
+      });
+  });
+
+/** @template T @param {T[]} list @returns {[T, ...T[]]} */
+const nonEmpty = (list) => {
+  if (!list.length) throw new Error("no Fontsource files matched the requested subsets");
+  return /** @type {[T, ...T[]]} */ (list);
+};
+
 export default defineConfig({
+  fonts: [
+    {
+      provider: fontProviders.local(),
+      name: "Inter",
+      cssVariable: "--font-inter",
+      fallbacks: ["sans-serif"],
+      options: {
+        variants: nonEmpty(
+          fontsourceVariants(
+            "inter",
+            ["400.css", "500.css", "600.css", "700.css"],
+            ["latin", "greek"],
+          ),
+        ),
+      },
+    },
+    {
+      provider: fontProviders.local(),
+      name: "Instrument Serif",
+      cssVariable: "--font-instrument-serif",
+      fallbacks: ["serif"],
+      options: {
+        variants: nonEmpty(
+          fontsourceVariants("instrument-serif", ["400.css", "400-italic.css"], ["latin"]),
+        ),
+      },
+    },
+  ],
   site: "https://dataqualitylabs.com",
   // research(2026-05): @astrojs/sitemap auto-generates
   // sitemap-index.xml from `site` + `base`, surfacing the publication /
