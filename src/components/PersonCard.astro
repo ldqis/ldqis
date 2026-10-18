@@ -1,0 +1,53 @@
+---
+// One person on the homepage team grid: photo, name (linking to their page), role, links.
+// `compact` is the smaller past-cohort variant.
+import type { CollectionEntry } from "astro:content";
+import Avatar from "./Avatar.astro";
+import ContactLinks from "./ContactLinks.astro";
+
+interface Props {
+  p: CollectionEntry<"people">["data"] & { id: string };
+  compact?: boolean;
+}
+
+const { p, compact = false } = Astro.props;
+const base = import.meta.env.BASE_URL.replace(/\/$/, "");
+---
+
+<div
+  class:list={["border-t border-line pt-5", compact ? "pb-7" : "pb-9", p.lead && "sm:col-span-2"]}
+>
+  <div class:list={["flex gap-4", compact ? "items-center" : "flex-col items-start"]}>
+    <Avatar
+      avatar={p.avatar}
+      github={p.github}
+      initials={p.initials}
+      name={p.name}
+      size={compact ? 40 : 64}
+      transitionName={`avatar-${p.id}`}
+    />
+    <a
+      href={`${base}/people/${p.id}/`}
+      class:list={[
+        "hover:text-rit-orange-text",
+        compact ? "text-[15px] font-medium" : "text-[22px] leading-tight",
+      ]}
+      style={compact ? undefined : "font-family: var(--font-display); letter-spacing: -0.3px;"}
+    >
+      {p.name}
+    </a>
+  </div>
+  <p class="mt-2 text-[13px] text-text-dim">{p.role}</p>
+  {p.years && <p class="mt-1 text-xs text-text-dim">{p.years}</p>}
+  <ContactLinks
+    email={p.email}
+    scholar={p.scholar}
+    ieee={p.ieee}
+    website={p.website}
+    github={p.github}
+    linkedin={p.linkedin}
+    youtube={p.youtube}
+    orcid={p.orcid}
+    name={p.name}
+  />
+</div>

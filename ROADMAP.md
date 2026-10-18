@@ -38,12 +38,6 @@ These hold across redesigns; changing any is a deliberate decision, not drift.
 
 ### Backlog (unprioritized)
 
-- **Lines, not boxes.** The homepage sets research areas, projects, and publications in
-  rounded, bordered cards. research(2026-10): the lab sites singled out for design (Flatiron,
-  Biohub, The Scientist's lab-website award winners) are restrained and let typography, spacing,
-  and hairline rules carry the structure. Rework one section at a time, starting with research
-  areas, and compare each against the current version before moving on. Sources:
-  thisisvisceral.com, the-scientist.com.
 - **Research areas / themes** — group the lab's work by problem area (data quality,
   integrity, security) on the homepage and a research page, each theme linking its projects,
   publications, and people. research(2026-06): peer lab sites (Stanford AI, Oxford OATML)
@@ -88,6 +82,18 @@ ideas. These were weighed and declined, recorded so they aren't re-proposed:
 ## Shipped
 
 Highlights below; full history in git.
+
+- **2026-10-18: Lines, not boxes, and a hero built from real data.** Every homepage section
+  (research areas, projects, publications, people, teaching, funding) trades rounded, bordered
+  cards for hairline rules and whitespace, from shared `SectionHeader`, `ProjectCard`, and
+  `PersonCard` components; section labels are sentence case, and the numbering and arrows that
+  implied sequence or decoration are gone. The hero's signature is now InteFL's real weekly
+  experiment record, which rises once on load (not with reduced motion), and the four stat
+  tiles became one sentence with the same live counts. research(2026-10): recognized lab sites
+  are restrained and let typography, spacing, and rules carry structure; the design-award
+  rubric weights design and usability over spectacle, and current motion practice is one
+  purposeful, reduced-motion-aware moment. Sources: thisisvisceral.com, the-scientist.com,
+  utsubo.com, motionkit.io.
 
 - **2026-10-18: No layout shift while fonts load.** Fonts are declared through Astro's Fonts
   API, which adds fallback faces with metrics matched to Inter and Instrument Serif, and the
