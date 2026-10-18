@@ -10,6 +10,7 @@
 // over ARIA-annotated SVG. Sources: datadoghq.com/blog/timeseries-metric-graphs-101,
 // sarasoueidan.com/blog/accessible-data-charts-for-khan-academy-2018-annual-report
 import { toDate, type StatsView } from "../lib/experiment-stats";
+import Subhead from "./Subhead.astro";
 
 interface Props {
   view: StatsView;
@@ -42,12 +43,12 @@ const panels = [
 
 <section
   id="experiments"
-  class="mt-12 border-t border-line pt-8"
+  class="mt-14 border-t border-line pt-10"
   aria-labelledby="experiments-heading"
 >
-  <h2 id="experiments-heading" class="mb-6 text-xs tracking-[1.5px] text-text-faint uppercase">
+  <Subhead id="experiments-heading" class="mb-6">
     Experiments
-  </h2>
+  </Subhead>
 
   <p class="lede">
     {plural(view.total)}

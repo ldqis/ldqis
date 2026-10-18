@@ -1,0 +1,40 @@
+---
+// Lab members credited on a page (a project's contributors, a paper's authors), each with their
+// photo, name linking to their page, and role, in a ruled grid.
+import type { CollectionEntry } from "astro:content";
+import Avatar from "./Avatar.astro";
+
+interface Props {
+  people: CollectionEntry<"people">[];
+  label: string;
+}
+const { people, label } = Astro.props;
+const base = import.meta.env.BASE_URL.replace(/\/$/, "");
+---
+
+<ul
+  class="grid grid-cols-1 gap-x-8 border-t border-line sm:grid-cols-2"
+  role="list"
+  aria-label={label}
+>
+  {people.map((person) => (
+    <li class="flex items-center gap-4 border-b border-line py-4">
+      <Avatar
+        avatar={person.data.avatar}
+        github={person.data.github}
+        initials={person.data.initials}
+        name={person.data.name}
+        size={44}
+      />
+      <div class="min-w-0">
+        <a
+          href={`${base}/people/${person.id}/`}
+          class="text-[15px] font-medium text-text hover:text-rit-orange-text"
+        >
+          {person.data.name}
+        </a>
+        <p class="text-[13px] text-text-dim">{person.data.role}</p>
+      </div>
+    </li>
+  ))}
+</ul>

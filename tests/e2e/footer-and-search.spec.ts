@@ -49,7 +49,7 @@ test.describe("footer", () => {
             );
           await expect(page.getByRole("navigation", { name: "Footer" })).toHaveCount(1);
           await expect(page.getByRole("contentinfo")).toHaveCount(1);
-          await expect(page.getByRole("region", { name: "Lab" })).toHaveCount(0);
+          await expect(page.getByRole("region", { name: "Lab", exact: true })).toHaveCount(0);
         });
       }
     });

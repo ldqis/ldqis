@@ -83,6 +83,14 @@ ideas. These were weighed and declined, recorded so they aren't re-proposed:
 
 Highlights below; full history in git.
 
+- **2026-10-18: One design language across the inner pages.** Person, project, publication, and
+  news pages, the full publications list, and the 404 page drop boxed cards, all-caps labels,
+  and pill tags for the homepage's hairline rules and serif sentence-case headings (a shared
+  `Subhead`). Person pages lead with the name and a large photo, as Stanford HAI's do; project
+  contributors and publication authors show their photos through a shared `PeopleList` instead
+  of initials chips. research(2026-10): reviewed Stanford HAI person pages and Ai2's team
+  directory, where large photos and type carry the page.
+
 - **2026-10-18: Featured publications, named project groups, and a clearer support path.**
   Publications take a `featured` flag (CMS-editable); the homepage's "Selected publications"
   shows only featured entries, chosen from the senior members' strongest recent work (DSN 2026,

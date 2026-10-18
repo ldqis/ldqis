@@ -4,6 +4,8 @@ import { getCollection, getEntries } from "astro:content";
 import BaseLayout from "../../layouts/BaseLayout.astro";
 import ExperimentStats from "../../components/ExperimentStats.astro";
 import Nav from "../../components/Nav.astro";
+import PeopleList from "../../components/PeopleList.astro";
+import Subhead from "../../components/Subhead.astro";
 import { summarize } from "../../lib/experiment-stats";
 
 // research(2026-05): Astro's dynamic-route IDs come from filenames via
@@ -38,16 +40,7 @@ const stats = (await getCollection("experimentStats")).find((s) => s.id === entr
 
   <main id="main" class="relative z-[1] pt-16 pb-32">
     <article class="mx-auto max-w-[800px] px-6">
-      <div class="mb-6 flex flex-wrap items-center gap-3">
-        {tags.map((t) => (
-          <span
-            class="rounded-full border px-[10px] py-[3px] text-[11px] tracking-[1px] uppercase"
-            style="color: var(--color-rit-orange-text); background: color-mix(in oklab, var(--color-rit-orange) 8%, transparent); border-color: color-mix(in oklab, var(--color-rit-orange) 8%, transparent);"
-          >
-            {t}
-          </span>
-        ))}
-      </div>
+      <p class="mb-4 text-sm font-medium text-rit-orange-text">{tags.join(", ")}</p>
 
       <h1
         class="mb-3"
@@ -58,17 +51,17 @@ const stats = (await getCollection("experimentStats")).find((s) => s.id === entr
 
       <p class="mb-8 text-xl text-text-dim italic">{tagline}</p>
 
-      <div class="mb-8 font-mono text-sm text-text-faint">{stack.join(" · ")}</div>
+      <div class="prose prose-lg mb-6 max-w-none" set:html={desc} />
 
-      <div class="prose prose-lg mb-12 max-w-none" set:html={desc} />
+      <p class="mb-8 text-sm text-text-faint">Built with {stack.join(", ")}</p>
 
-      <div class="flex flex-wrap gap-[14px] border-t border-line pt-8">
+      <div class="flex flex-wrap gap-x-6 gap-y-2 border-t border-line pt-6 text-[15px]">
         {links.map((l) => (
           <a
             href={l.href}
             target="_blank"
             rel="noopener"
-            class="inline-flex items-center gap-2 rounded-full border border-line px-[18px] py-[10px] text-sm hover:border-rit-orange hover:text-rit-orange-text"
+            class="text-rit-orange-text underline-offset-4 hover:underline"
           >
             {l.label}
           </a>
@@ -83,32 +76,11 @@ const stats = (await getCollection("experimentStats")).find((s) => s.id === entr
       )}
 
       {contributorEntries.length > 0 && (
-        <section class="mt-12 border-t border-line pt-8" aria-labelledby="contributors-heading">
-          <h2
-            id="contributors-heading"
-            class="mb-4 text-xs tracking-[1.5px] text-text-faint uppercase"
-          >
+        <section class="mt-14" aria-labelledby="contributors-heading">
+          <Subhead id="contributors-heading" class="mb-5">
             Contributors
-          </h2>
-          <ul class="flex flex-wrap gap-3" role="list">
-            {contributorEntries.map((person) => (
-              <li>
-                <a
-                  href={`${baseUrl}/people/${person.id}/`}
-                  class="inline-flex items-center gap-2 rounded-full border border-line px-[14px] py-[8px] text-sm hover:border-rit-orange hover:text-rit-orange-text"
-                >
-                  <span
-                    class="flex h-6 w-6 items-center justify-center rounded-full text-[10px] font-semibold"
-                    style="background: linear-gradient(135deg, var(--color-rit-orange), var(--color-rit-yellow)); color: #0a0e13;"
-                    aria-hidden="true"
-                  >
-                    {person.data.initials}
-                  </span>
-                  {person.data.name}
-                </a>
-              </li>
-            ))}
-          </ul>
+          </Subhead>
+          <PeopleList people={contributorEntries} label={`Contributors to ${name}`} />
         </section>
       )}
     </article>

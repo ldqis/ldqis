@@ -4,6 +4,7 @@ import { getCollection, render } from "astro:content";
 import { Image, getImage } from "astro:assets";
 import BaseLayout from "../../layouts/BaseLayout.astro";
 import Nav from "../../components/Nav.astro";
+import { formatTags } from "../../lib/news";
 
 // research(2026-05): Astro's content layer uses `render(entry)` to compile
 // Markdown body to a Vue/Astro-renderable Content component. There's no
@@ -51,13 +52,10 @@ const ogImage = cover
     <article class="mx-auto max-w-[760px] px-6">
       <header class="mb-10">
         <div class="mb-4 flex flex-wrap items-baseline gap-4">
-          <time
-            datetime={pubDate.toISOString()}
-            class="text-xs tracking-[1.5px] text-rit-orange-text uppercase"
-          >
+          <time datetime={pubDate.toISOString()} class="text-sm font-medium text-rit-orange-text">
             {dateFmt.format(pubDate)}
           </time>
-          <span class="text-xs tracking-[1.5px] text-text-faint uppercase">{author}</span>
+          <span class="text-sm text-text-faint">{author}</span>
         </div>
         <h1
           class="mb-6"
@@ -90,16 +88,9 @@ const ogImage = cover
       </div>
 
       {tags.length > 0 && (
-        <ul class="mt-12 flex flex-wrap gap-2 border-t border-line pt-8">
-          {tags.map((t) => (
-            <li
-              class="rounded-full border px-[10px] py-[3px] text-[11px] tracking-[1px] uppercase"
-              style="color: var(--color-rit-orange-text); background: color-mix(in oklab, var(--color-rit-orange) 8%, transparent); border-color: color-mix(in oklab, var(--color-rit-orange) 8%, transparent);"
-            >
-              {t}
-            </li>
-          ))}
-        </ul>
+        <p class="mt-12 border-t border-line pt-6 text-sm text-text-faint">
+          Filed under {formatTags(tags)}
+        </p>
       )}
     </article>
   </main>

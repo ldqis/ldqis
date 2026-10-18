@@ -1,0 +1,18 @@
+---
+// A serif subsection heading: the lists inside a page section and the sections of a detail page.
+interface Props {
+  as?: "h2" | "h3" | "h4";
+  id?: string;
+  size?: number; // px
+  class?: string;
+}
+const { as: Tag = "h2", id, size = 30, class: extra = "" } = Astro.props;
+---
+
+<Tag
+  id={id}
+  class:list={["text-text", extra]}
+  style={`font-family: var(--font-display); font-size: ${size}px; line-height: 1.1; letter-spacing: -0.5px;`}
+>
+  <slot />
+</Tag>
