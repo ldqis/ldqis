@@ -89,6 +89,13 @@ ideas. These were weighed and declined, recorded so they aren't re-proposed:
 
 Highlights below; full history in git.
 
+- **2026-10-18: No layout shift while fonts load.** Fonts are declared through Astro's Fonts
+  API, which adds fallback faces with metrics matched to Inter and Instrument Serif, and the
+  body and heading faces are preloaded. The homepage's CLS went from 0.11 to under 0.01 and
+  every page type scores 100 in all four Lighthouse categories; an e2e test holds CLS under
+  0.02 while the other faces arrive late. research(2026-10): Astro Fonts API optimized
+  fallbacks; web.dev rates CLS up to 0.1 as good. Source: docs.astro.build/en/guides/fonts.
+
 - **2026-10-18: A lighter footer.** The footer follows the site's theme under a hairline rule
   instead of a fixed black block, and holds only what the header lacks: the lab's address and
   email, its own links, and Scholar, GitHub, and RSS. research(2026-10): recognized lab sites
