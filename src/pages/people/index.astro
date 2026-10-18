@@ -1,6 +1,7 @@
 ---
 import BaseLayout from "../../layouts/BaseLayout.astro";
 import Nav from "../../components/Nav.astro";
+import PageHeader from "../../components/PageHeader.astro";
 import PersonCard from "../../components/PersonCard.astro";
 import AlumniList from "../../components/AlumniList.astro";
 import Subhead from "../../components/Subhead.astro";
@@ -19,19 +20,13 @@ const { current, alumni } = await loadPeople();
 
   <main id="main" class="relative z-[1] pt-16 pb-32">
     <div class="mx-auto max-w-[1200px] px-6">
-      <p class="mb-4 text-sm font-medium text-rit-orange-text">People</p>
-      <h1
-        class="mb-6"
-        style="font-family: var(--font-display); font-size: clamp(36px, 5vw, 56px); line-height: 1.05; letter-spacing: -1px;"
-      >
-        Everyone who has built the lab.
-      </h1>
+      <PageHeader label="People" title="Everyone who has built the lab." />
       <p class="mb-14 max-w-[64ch] text-lg text-text-dim">
         LDQIS is the work of every researcher who has passed through it. Each name links to that
         person's research, publications, and projects.
       </p>
 
-      <section aria-labelledby="current" class="mb-20">
+      <section aria-labelledby="current" class="mb-20" data-pagefind-ignore>
         <Subhead as="h2" id="current" size={36} class="mb-2">
           Current team
         </Subhead>
@@ -43,7 +38,7 @@ const { current, alumni } = await loadPeople();
         </div>
       </section>
 
-      <section aria-labelledby="alumni">
+      <section aria-labelledby="alumni" data-pagefind-ignore>
         <Subhead as="h2" id="alumni" size={36} class="mb-2">
           Past researchers
         </Subhead>

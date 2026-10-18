@@ -8,7 +8,7 @@ import { ROOT } from "./routes";
 const DIR = join(ROOT, "src/content/people");
 const cohort = (c: string) =>
   readdirSync(DIR)
-    .filter((f) => f.endsWith(".md"))
+    .filter((f) => f.endsWith(".md") && !f.startsWith("_"))
     .filter((f) =>
       new RegExp(`^cohort:\\s*["']?${c}["']?\\s*$`, "m").test(readFileSync(join(DIR, f), "utf8")),
     )
@@ -36,9 +36,10 @@ test("the homepage shows the current team and links to the full roster", async (
   for (const id of current)
     await expect(people.locator(`a[href="/people/${id}/"]`).first()).toBeVisible();
   for (const id of alumni) await expect(people.locator(`a[href="/people/${id}/"]`)).toHaveCount(0);
-  await expect(
-    people.getByRole("link", { name: "Meet everyone, past and present" }),
-  ).toHaveAttribute("href", "/people/");
+  await expect(people.getByRole("link", { name: /^See all \d+ people$/ })).toHaveAttribute(
+    "href",
+    "/people/",
+  );
 });
 
 test("the footer's Alumni link lands on the alumni heading", async ({ page }) => {

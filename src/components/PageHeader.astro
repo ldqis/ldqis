@@ -1,0 +1,19 @@
+---
+// The top of an index page (news, publications, people): a short label, the serif page
+// title, and the intro passed as the slot.
+interface Props {
+  label: string;
+  title: string;
+}
+
+const { label, title } = Astro.props;
+---
+
+<p class="mb-4 text-sm font-medium text-rit-orange-text">{label}</p>
+<h1
+  class="mb-6"
+  style="font-family: var(--font-display); font-size: clamp(36px, 5vw, 56px); line-height: 1.05; letter-spacing: -1px;"
+>
+  {title}
+</h1>
+<slot />

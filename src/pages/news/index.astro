@@ -4,6 +4,7 @@ import { Image } from "astro:assets";
 import { formatTags } from "../../lib/news";
 import BaseLayout from "../../layouts/BaseLayout.astro";
 import Nav from "../../components/Nav.astro";
+import PageHeader from "../../components/PageHeader.astro";
 
 // Hide drafts AND future-dated posts; mirror the same filter the RSS feed
 // uses so the index and feed stay in sync.
@@ -25,19 +26,13 @@ const base = (import.meta.env.BASE_URL || "/").replace(/\/$/, "");
 
 <BaseLayout
   title="News · LDQIS"
-  description="News from the Laboratory of Data Quality and Intelligent Security at RIT — research updates, releases, and lab events."
+  description="News from the Laboratory of Data Quality and Intelligent Security at RIT: research updates, releases, and lab events."
 >
   <Nav back={{ href: `${base}/`, label: "← Home" }} />
 
   <main id="main" class="relative z-[1] pt-16 pb-32">
     <header class="mx-auto max-w-[800px] px-6 pb-12">
-      <p class="mb-4 text-sm font-medium text-rit-orange-text">News</p>
-      <h1
-        class="mb-4"
-        style="font-family: var(--font-display); font-size: clamp(40px, 6vw, 64px); line-height: 1.05; letter-spacing: -1px;"
-      >
-        Notes from the lab.
-      </h1>
+      <PageHeader label="News" title="Notes from the lab." />
       <p class="text-lg text-text-dim">
         Research updates, releases, and lab events. Subscribe via{" "}
         <a

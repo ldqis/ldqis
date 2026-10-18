@@ -355,19 +355,14 @@ const { current: currentTeam, alumni } = await loadPeople();
           ))}
         </div>
 
-        <p class="mt-4 max-w-[64ch] text-text-dim">
-          {alumni.length} past researchers built the lab's earlier work, from our Android security
-          apps to the NSF Data Quality &amp; Security Evaluation Framework.
-        </p>
-        <p class="mt-3">
+        <div class="mt-12">
           <a
             href={`${import.meta.env.BASE_URL.replace(/\/$/, "")}/people/`}
-            class="border-b font-medium"
-            style="color: var(--color-rit-orange-text); border-color: color-mix(in oklab, var(--color-rit-orange) 30%, transparent);"
+            class="text-[15px] font-medium text-rit-orange-text underline-offset-4 hover:underline"
           >
-            Meet everyone, past and present
+            See all {currentTeam.length + alumni.length} people
           </a>
-        </p>
+        </div>
       </div>
     </section>
 
