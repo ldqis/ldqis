@@ -109,7 +109,12 @@ collections:
       - { label: Google Scholar URL, name: scholar, widget: string, required: false }
       - { label: IEEE Xplore URL, name: ieee, widget: string, required: false }
       - { label: ORCID iD, name: orcid, widget: string, required: false }
-      - { label: Years in the lab, name: years, widget: string, required: false }
+      - label: Years in the lab
+        name: years
+        widget: string
+        required: false
+        hint: "a year or range, e.g. 2018–2022 or 2020–present"
+        pattern: ['\b(19|20)\d{2}\b', "Use a year or range, e.g. 2018–2022 or 2020–present"]
       - { label: Lab lead, name: lead, widget: boolean, required: false, default: false }
 
   - name: publications
