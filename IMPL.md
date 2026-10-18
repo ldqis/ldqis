@@ -7,8 +7,8 @@ longer-term plan lives in [ROADMAP.md](./ROADMAP.md); git history has the full r
 
 **PR #195, CMS People form** (branch `feat/cms-ux`, worktree `.claude/worktrees/cms-ux`). The
 independent review's findings are fixed: the build no longer rejects a pair of years the form
-can save (an end year alone, or a reversed pair), `unique` is gone until Sveltia 0.248.0
-supports it, and the intake script reads single-quoted card values and keeps "2016-2019 (now
+can save (an end year alone, or a reversed pair), `unique` is gone until the planned Sveltia upgrade
+(the option ships from 0.237.0), and the intake script reads single-quoted card values and keeps "2016-2019 (now
 at Google)" closed. After merge and deploy, open the live `/admin`, sign in, and confirm the
 People form loads with no config errors and the year dropdowns run 2003 to this year plus
 Present.

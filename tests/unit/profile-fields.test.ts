@@ -100,6 +100,12 @@ describe("the profile form intake", () => {
     expect(parse("2016-2019, currently at IBM")).toBe("[2016, 2019]");
   });
 
+  it("keeps an open range open when a later year follows it", () => {
+    expect(parse("2021–present (MS 2023)")).toBe('[2021, "present"]');
+    expect(parse("2019 to present, MS 2022")).toBe('[2019, "present"]');
+    expect(parse("2021 - now")).toBe('[2021, "present"]');
+  });
+
   it("reads a card's single-quoted and double-quoted values", () => {
     const unquote = (raw: string) =>
       execFileSync(

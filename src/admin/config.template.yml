@@ -101,6 +101,7 @@ collections:
         widget: select
         required: false
         options: __YEARS_FROM_OPTIONS__
+        hint: "Your years show on your card only when this is set"
       - label: Until
         name: years_to
         widget: select

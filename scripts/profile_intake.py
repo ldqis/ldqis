@@ -77,8 +77,11 @@ def parse_years(text: str, this_year: int) -> tuple[int, int | str | None] | Non
     if not found or not all(LAB_FIRST_YEAR <= y <= this_year for y in found):
         return None
     start = found[0]
-    # "now" in "2016-2019 (now at Google)" is about the job after, so only a lone year opens.
-    if len(found) == 1 and re.search(r"present|now|current|today|since", text, re.I):
+    # Open only when the word ends the start year's own range: "2021–present (MS 2023)" is
+    # open, "2016-2019 (now at Google)" is not.
+    if re.search(
+        rf"\b{start}\s*(?:[-–—]|to|until|through)?\s*(?:present|now|current|today)\b", text, re.I
+    ) or re.search(rf"\bsince\s+{start}\b", text, re.I):
         return start, "present"
     end = found[1] if len(found) > 1 else None
     if end is not None and end < start:
