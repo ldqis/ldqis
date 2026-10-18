@@ -88,10 +88,9 @@ Highlights below; full history in git.
   appears as a thumbnail in the news list, and becomes the post's share image (cropped to
   1200x630). News dates now read the frontmatter day in UTC, so no build zone shifts them.
 
-- **2026-10-18: Projects grouped as research, earlier, and software.** Projects take a `kind`
-  (research or software) and a `status` (active or paused), both editable in the CMS. The
-  homepage lists active research, then earlier projects, then a software section for tools the
-  lab maintains, and a paused project's page says so. research(2026-10): lab sites list the
+- **2026-10-18: Projects grouped as research and software.** Projects take a `kind` (research
+  or software), editable in the CMS. The homepage lists research projects, then a software
+  section for tools the lab maintains. research(2026-10): lab sites list the
   software they maintain apart from their research projects. Sources:
   labs.csc.uni-frankfurt.de, ling.uni-konstanz.de computational-linguistics lab.
 

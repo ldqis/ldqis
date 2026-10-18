@@ -8,7 +8,6 @@ links:
   - { label: "GitHub ↗", href: "https://github.com/ajbarea/kourai-khryseai" }
   - { label: "Site ↗", href: "https://ajbarea.github.io/kourai-khryseai/" }
 order: 8
-status: paused
 contributors:
   - aj-barea
 ---

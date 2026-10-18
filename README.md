@@ -21,14 +21,28 @@ make check    # astro check (type-check + template validation)
 
 `make help` lists every target.
 
+## Adding your work
+
+You don't need to be a web developer to keep your entries current. Pick whichever path suits you:
+
+- **Browser editor.** With write access to this repository, sign in at
+  [dataqualitylabs.com/admin](https://dataqualitylabs.com/admin/) with GitHub and add, edit, or
+  delete a profile, project, publication, or news post through a form. It saves and redeploys for
+  you. Ask a repository admin for access.
+- **Submission forms, no account setup.** [Add or update your profile, add a project, or add a
+  publication](https://github.com/ldqis/ldqis/issues/new/choose). Each form turns a submission
+  into a pull request for review, and your GitHub photo is used automatically if you give your
+  username.
+- **Git.** Open a pull request that adds or edits a file under `src/content/`.
+
 ## Adding content
 
 Each kind of content is a folder under `src/content/`, and adding an entry is one new file. Schemas live in `src/content.config.ts`, so a typo in a cross-reference fails the build instead of shipping a broken page.
 
 - **`people/`**: current team and alumni. Optional fields add a profile photo (an upload, or auto-pulled from a `github:` handle), social and academic links (website, GitHub, LinkedIn, YouTube, ORCID, Scholar, IEEE), and years in the lab. Lab members can fill all of this from the [profile form](https://github.com/ldqis/ldqis/issues/new/choose) — no file editing.
-- **`projects/`**: the lab's open-source frameworks (InteFL, Phalanx-FL, Velocity-FL, Kourai Khryseai), each credited to its contributors.
+- **`projects/`**: the lab's research projects and the software it maintains, each credited to its contributors. `kind` (research or software) decides which section lists it. Every listed project counts as active; when a project's repository is archived on GitHub, take it off the list.
 - **`publications/`**: papers and books, with year, venue or publisher, and authors linked to their people entries.
-- **`news/`**: dated posts, surfaced at `/news/` with an RSS feed at `/news/rss.xml`.
+- **`news/`**: dated posts, surfaced at `/news/` with an RSS feed at `/news/rss.xml`. A post can carry one cover photo from `news/images/`, with alt text and a caption crediting the photographer.
 
 Every person, project, and publication renders to a stable per-page URL you can cite from a CV or profile. Cross-links (a publication's authors, a project's contributors) are computed at build time, so there is no bidirectional state to keep in sync.
 

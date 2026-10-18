@@ -8,7 +8,6 @@ links:
   - { label: "GitHub ↗", href: "https://github.com/ajbarea/velocity-fl" }
   - { label: "Docs ↗", href: "https://ajbarea.github.io/velocity-fl/" }
 order: 7
-status: paused
 contributors:
   - aj-barea
 ---
