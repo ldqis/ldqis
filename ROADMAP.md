@@ -49,9 +49,6 @@ These hold across redesigns; changing any is a deliberate decision, not drift.
   recruiting season. research(2026-06): all three peer sites surface a recruiting CTA, and
   guidance names prospective students + collaborators as the primary audience judging a lab
   site. Source: theacademicdesigner.com, SFU Library research-website tips.
-- **News post images** — one optional Astro-optimized image per news entry.
-  research(2026-06): every peer site pairs each news item with a thumbnail for scanability;
-  one field, no architecture cost.
 - **Admin (Sveltia CMS) UX** — the no-code `/admin` editor is live; streamline its editing
   experience (clearer fields, smoother flows) as more lab members start using it.
 - **Collaborators / partners** — credit the partner institutions and people the lab works
@@ -85,6 +82,11 @@ ideas. These were weighed and declined, recorded so they aren't re-proposed:
 ## Shipped
 
 Highlights below; full history in git.
+
+- **2026-10-17: News cover photos.** A post can carry one optional cover photo, optimized by
+  Astro, with required alt text and a caption that credits the photographer. It heads the post,
+  appears as a thumbnail in the news list, and becomes the post's share image (cropped to
+  1200x630). News dates now read the frontmatter day in UTC, so no build zone shifts them.
 
 - **2026-10-18: Projects grouped as research, earlier, and software.** Projects take a `kind`
   (research or software) and a `status` (active or paused), both editable in the CMS. The

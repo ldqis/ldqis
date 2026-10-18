@@ -1,6 +1,7 @@
 ---
 import { type GetStaticPaths } from "astro";
 import { getCollection, render } from "astro:content";
+import { Image, getImage } from "astro:assets";
 import BaseLayout from "../../layouts/BaseLayout.astro";
 import Nav from "../../components/Nav.astro";
 
@@ -21,19 +22,29 @@ export const getStaticPaths = (async () => {
 }) satisfies GetStaticPaths;
 
 const { entry } = Astro.props;
-const { title, description, summary, pubDate, tags, author } = entry.data;
+const { title, description, summary, pubDate, tags, author, cover, coverAlt, coverCaption } =
+  entry.data;
 const { Content } = await render(entry);
 
 const dateFmt = new Intl.DateTimeFormat("en-US", {
+  // pubDate is a calendar day parsed as UTC midnight; read it in UTC so no build zone shifts it.
+  timeZone: "UTC",
   year: "numeric",
   month: "long",
   day: "numeric",
 });
 
 const base = (import.meta.env.BASE_URL || "/").replace(/\/$/, "");
+// A post with a cover shares it, cropped to the 1200x630 the layout declares for og:image.
+const ogImage = cover
+  ? new URL(
+      (await getImage({ src: cover, width: 1200, height: 630, fit: "cover", format: "jpg" })).src,
+      Astro.site,
+    ).href
+  : undefined;
 ---
 
-<BaseLayout title={`${title} · LDQIS News`} description={description ?? summary}>
+<BaseLayout title={`${title} · LDQIS News`} description={description ?? summary} {ogImage}>
   <Nav back={{ href: `${base}/news/`, label: "← All news" }} />
 
   <main id="main" class="relative z-[1] pt-16 pb-32">
@@ -56,6 +67,23 @@ const base = (import.meta.env.BASE_URL || "/").replace(/\/$/, "");
         </h1>
         {summary && <p class="text-xl text-text-dim italic">{summary}</p>}
       </header>
+
+      {cover && (
+        <figure class="mb-12">
+          <Image
+            src={cover}
+            alt={coverAlt ?? ""}
+            widths={[760, 1140, 1520]}
+            sizes="(min-width: 808px) 760px, calc(100vw - 48px)"
+            loading="eager"
+            fetchpriority="high"
+            class="w-full rounded-[14px]"
+          />
+          {coverCaption && (
+            <figcaption class="mt-3 text-sm text-text-faint">{coverCaption}</figcaption>
+          )}
+        </figure>
+      )}
 
       <div class="prose prose-lg max-w-none">
         <Content />

@@ -223,6 +223,8 @@ collections:
     icon: newspaper
     preview_path: "__BASE_PREFIX__news/{{slug}}/"
     folder: src/content/news
+    media_folder: images
+    public_folder: ./images
     extension: md
     format: yaml-frontmatter
     create: true
@@ -246,6 +248,21 @@ collections:
         }
       - { label: Author, name: author, widget: string, default: LDQIS }
       - { label: Description, name: description, widget: string, required: false }
+      - { label: Cover photo, name: cover, widget: image, required: false }
+      - {
+          label: Cover photo description,
+          name: coverAlt,
+          widget: string,
+          required: false,
+          hint: "required with a photo: describe what it shows for people who can't see it",
+        }
+      - {
+          label: Cover photo caption,
+          name: coverCaption,
+          widget: string,
+          required: false,
+          hint: "shown under the photo; credit the photographer",
+        }
       - {
           label: Tags,
           name: tags,

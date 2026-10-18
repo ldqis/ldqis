@@ -23,10 +23,12 @@ Nothing in flight. The site moved to the `ldqis` org and to `dataqualitylabs.com
 
 ## Next up
 
-1. **Codecov for the org,** then update the README badge token.
-2. **Install GitGuardian on the org.**
-3. **Retire the old server.** The previous site still answers at `129.21.34.220`
+1. **RSS 2026 talk video.** When the Rochester Security Summit uploads the recording, add a
+   "Watch the talk" link to `src/content/news/2026-10-rochester-security-summit.md`.
+2. **Codecov for the org,** then update the README badge token.
+3. **Install GitGuardian on the org.**
+4. **Retire the old server.** The previous site still answers at `129.21.34.220`
    (`vhost11.cs.rit.edu`); RIT CS IT has to take it down.
-4. **Backfill team cross-links.** Projects and publications link to their lab-member
+5. **Backfill team cross-links.** Projects and publications link to their lab-member
    authors and contributors through the `people` collection; add the remaining lists as
    authorship is confirmed.
