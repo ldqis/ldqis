@@ -209,13 +209,6 @@ collections:
         options:
           - { label: Research project, value: research }
           - { label: Software tool, value: software }
-      - label: Status
-        name: status
-        widget: select
-        default: active
-        options:
-          - { label: Active, value: active }
-          - { label: Paused, value: paused }
 
   - name: news
     label: News

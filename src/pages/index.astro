@@ -126,8 +126,7 @@ const projectEntries = await getCollection("projects");
 const projects = projectEntries
   .sort((a, b) => a.data.order - b.data.order)
   .map((entry) => ({ ...entry.data, id: entry.id }));
-const research = projects.filter((p) => p.kind === "research" && p.status === "active");
-const earlier = projects.filter((p) => p.kind === "research" && p.status === "paused");
+const research = projects.filter((p) => p.kind === "research");
 const software = projects.filter((p) => p.kind === "software");
 
 // Projects with an experiment database get a run count on their card.
@@ -295,19 +294,6 @@ const pastCohort = peopleEntries
             <ProjectCard p={p} experimentTotal={experimentTotals.get(p.id)} />
           ))}
         </div>
-        {earlier.length > 0 && (
-          <>
-            <h3 class="mt-20 mb-3 text-2xl font-medium text-text">Earlier projects</h3>
-            <p class="mb-8 max-w-[64ch] text-text-dim">
-              No longer in active development. The code and documentation stay public.
-            </p>
-            <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
-              {earlier.map((p) => (
-                <ProjectCard p={p} experimentTotal={experimentTotals.get(p.id)} />
-              ))}
-            </div>
-          </>
-        )}
         {software.length > 0 && (
           <>
             <h3 class="mt-20 mb-3 text-2xl font-medium text-text">Software</h3>
@@ -337,7 +323,7 @@ const pastCohort = peopleEntries
         </h2>
         <p class="mb-14 max-w-[64ch] text-lg text-text-dim">
           A handful of highlights from the lab's work. See the full publication record below, or Dr.
-          Reznik's
+          Reznik's{" "}
           <a
             href={SCHOLAR_URL}
             target="_blank"
@@ -560,7 +546,7 @@ const pastCohort = peopleEntries
           Lab members teach across RIT's undergraduate and graduate computer science curriculum —
           the same areas the lab researches, from intelligent systems and security measurement to
           neural networks and intelligent security. For schedules and current materials, see Dr.
-          Reznik's
+          Reznik's{" "}
           <a
             href="https://www.cs.rit.edu/~lr/"
             target="_blank"

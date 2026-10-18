@@ -54,8 +54,6 @@ const projects = defineCollection({
     // research(2026-10): lab sites list software the lab maintains apart from its research
     // projects (Frankfurt CSC labs, Konstanz CL lab), so tools render in their own group.
     kind: z.enum(["research", "software"]).default("research"),
-    // A paused project stays listed, under its own heading, rather than claiming activity.
-    status: z.enum(["active", "paused"]).default("active"),
     // research(2026-05): Astro's `reference("people")` validates each
     // string against the people collection's IDs at build time, so a typo
     // hard-fails the build instead of rendering a broken link silently.

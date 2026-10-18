@@ -1,34 +1,22 @@
 ---
 title: "Welcome to the rebuilt LDQIS website"
-description: "The lab's website moved off the legacy Flask/Bootstrap stack to an Astro + Tailwind 4 static build. Content as code, so the whole lab can keep it current."
-summary: "The lab's website moved to Astro + Tailwind 4. Content as code, so anyone in the lab can add their work."
+description: "The lab's website is rebuilt: every researcher, project, and paper has its own page, with news, an RSS feed, and accessibility checked on every change."
+summary: "The lab has a new website: every researcher, project, and paper now has its own page."
 pubDate: 2026-05-22
-tags: ["site", "open-source"]
+tags: ["site"]
 author: "LDQIS"
 ---
 
-The lab's website has a new home, and it is built so the whole lab can keep it current.
+The lab has a new website.
 
-The old site ran on Flask and Bootstrap with login, registration, and a Postgres backend behind it. That was more moving parts than a lab site needs, so we replaced it with something simpler and sturdier.
+The old site was a full web application with logins and a database behind it, more than a lab
+site needs. The new one is a set of fast, plain pages that the whole lab can keep current.
 
-What is here now is an [Astro](https://astro.build/) project that compiles to static HTML and is hosted on GitHub Pages. The source tree _is_ the site: every project, publication, team member, and news post is a Markdown file. No database to maintain, and you can edit it from a browser editor, an issue form, or a pull request.
+- **A page for everyone and everything.** Every researcher, project, and publication has its own
+  page, at an address you can cite from a CV or a profile.
+- **News with an RSS feed,** so you can follow new posts in any feed reader.
+- **Accessible by default.** Pages meet WCAG 2.2 AA in both the light and dark themes, checked
+  automatically on every change.
 
-## What's already live
-
-- **Research areas, projects, publications, and people**, rendered from the content files. Click through any of the four homepage sections for the detail layer. Every project, publication, and researcher (current and past) has a stable per-page URL you can cite from a CV or LinkedIn.
-- **WCAG 2.2 AA accessibility** across the site, gated on every PR by axe-core + Playwright.
-- **Theme toggle** with `localStorage` persistence. Skip link, semantic heading hierarchy, and `prefers-reduced-motion` work because they are tested.
-- **RSS feed** for the news section, so you can subscribe in any reader and get new posts automatically as the lab publishes them.
-- **A browser editor** at `/admin`: lab members with repo access can add, edit, or delete any entry through a form, no Markdown or Git needed. Newcomers and one-off contributors can still use the issue forms.
-
-## Adding your work
-
-This is the lab's site, and it's meant to be easy to keep current. You don't need to be a web developer.
-
-- **Edit anything.** With write access to the repo, sign in at [the editor](https://dataqualitylabs.com/admin/) with GitHub and update your profile, a project, a publication, or a news post in a simple form. It saves and redeploys for you. (Ask me for access.)
-- **No account? Use a form.** The [**Add or update your profile**](https://github.com/ldqis/ldqis/issues/new/choose), [**Add a project**](https://github.com/ldqis/ldqis/issues/new/choose), and [**Add a publication**](https://github.com/ldqis/ldqis/issues/new/choose) forms turn a submission into a pull request for review. No Markdown, no git, and your GitHub photo is used automatically if you add your username.
-- **Prefer git?** Open a pull request directly, or send a news post my way and I'll wire it in.
-
-## What's next
-
-The site lives at `dataqualitylabs.com`. The repo is public at [github.com/ldqis/ldqis](https://github.com/ldqis/ldqis), and contributions from the lab are welcome.
+Lab members can add or update their profile, projects, papers, and news posts themselves; see
+[how to add your work](https://github.com/ldqis/ldqis#adding-your-work).
