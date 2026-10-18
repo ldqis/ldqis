@@ -19,7 +19,7 @@ export const getStaticPaths = (async () => {
 }) satisfies GetStaticPaths;
 
 const { entry } = Astro.props;
-const { name, tagline, tags, stack, desc, links, contributors } = entry.data;
+const { name, tagline, tags, stack, desc, links, contributors, status } = entry.data;
 
 // `getEntries` resolves each `reference("people")` into the full entry, in
 // the order the IDs were listed in frontmatter. Build hard-fails if any ID
@@ -57,6 +57,12 @@ const stats = (await getCollection("experimentStats")).find((s) => s.id === entr
       </h1>
 
       <p class="mb-8 text-xl text-text-dim italic">{tagline}</p>
+
+      {status === "paused" && (
+        <p class="mb-8 text-sm text-text-dim">
+          Paused: no longer in active development. The code and documentation stay public.
+        </p>
+      )}
 
       <div class="mb-8 font-mono text-sm text-text-faint">{stack.join(" · ")}</div>
 
