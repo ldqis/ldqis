@@ -44,10 +44,13 @@ export function labYears(now = new Date()): number[] {
 }
 
 // "2021–present", "2015–2018", or "2019" when a person started and finished in one year.
+// The CMS cannot compare its two dropdowns, so an end year with no start shows nothing and a
+// reversed pair shows in order.
 export function formatYears(from?: number, to?: number | typeof PRESENT): string {
   if (from === undefined) return "";
   if (to === undefined || to === from) return String(from);
-  return `${from}–${to}`;
+  if (to === PRESENT) return `${from}–${PRESENT}`;
+  return `${Math.min(from, to)}–${Math.max(from, to)}`;
 }
 
 // Up to two letters from the name, honorific dropped: "Dr. Leon Reznik" → "LR".

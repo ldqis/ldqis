@@ -5,12 +5,13 @@ longer-term plan lives in [ROADMAP.md](./ROADMAP.md); git history has the full r
 
 ## In progress
 
-**PR #195, CMS People form** (branch `feat/cms-ux`, worktree `.claude/worktrees/cms-ux`). All
-local gates passed on 2026-10-18 (build, lint, check, unit 61/61, e2e 587/587). Before merge:
-
-1. Run an independent review (one was cut off by a restart), fix what it finds, merge on green.
-2. After deploy, open the live `/admin`, sign in, and confirm the People form loads with no
-   config errors and that the year dropdowns run 2003 to this year plus Present.
+**PR #195, CMS People form** (branch `feat/cms-ux`, worktree `.claude/worktrees/cms-ux`). The
+independent review's findings are fixed: the build no longer rejects a pair of years the form
+can save (an end year alone, or a reversed pair), `unique` is gone until Sveltia 0.248.0
+supports it, and the intake script reads single-quoted card values and keeps "2016-2019 (now
+at Google)" closed. After merge and deploy, open the live `/admin`, sign in, and confirm the
+People form loads with no config errors and the year dropdowns run 2003 to this year plus
+Present.
 
 Local CMS testing without a GitHub sign-in: copy `src/content` to `public/__seed/` (never
 commit it), write it into the browser's private file storage with an empty `.git` folder,

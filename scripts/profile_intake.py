@@ -77,7 +77,8 @@ def parse_years(text: str, this_year: int) -> tuple[int, int | str | None] | Non
     if not found or not all(LAB_FIRST_YEAR <= y <= this_year for y in found):
         return None
     start = found[0]
-    if re.search(r"present|now|current|today|since", text, re.I):
+    # "now" in "2016-2019 (now at Google)" is about the job after, so only a lone year opens.
+    if len(found) == 1 and re.search(r"present|now|current|today|since", text, re.I):
         return start, "present"
     end = found[1] if len(found) > 1 else None
     if end is not None and end < start:
@@ -109,10 +110,20 @@ def card_slug(name: str) -> str:
         return " ".join(re.sub(r"^(dr|prof)\.?\s+", "", n.strip(), flags=re.I).lower().split())
 
     for md in sorted(PEOPLE.glob("[!_]*.md")):
-        m = re.search(r'^name:\s*"?(.*?)"?\s*$', md.read_text(encoding="utf-8"), re.M)
-        if m and key(m.group(1)) == key(name):
+        m = re.search(r"^name:\s*(.*?)\s*$", md.read_text(encoding="utf-8"), re.M)
+        if m and key(unquote(m.group(1))) == key(name):
             return md.stem
     return slugify(name)
+
+
+def unquote(val: str) -> str:
+    """A YAML scalar as written in a card: "double" (backslash escapes), 'single' ('' is a
+    quote), or plain."""
+    if len(val) >= 2 and val[0] == '"' and val[-1] == '"':
+        return val[1:-1].replace('\\"', '"').replace("\\\\", "\\")
+    if len(val) >= 2 and val[0] == "'" and val[-1] == "'":
+        return val[1:-1].replace("''", "'")
+    return val
 
 
 def yaml_quote(value: str) -> str:
@@ -134,10 +145,7 @@ def parse_existing(md_path: Path) -> dict[str, str]:
         lm = re.match(r"^([A-Za-z_]+):\s*(.*)$", line)
         if not lm:
             continue
-        key, val = lm.group(1), lm.group(2).strip()
-        if len(val) >= 2 and val[0] == '"' and val[-1] == '"':
-            val = val[1:-1].replace('\\"', '"').replace("\\\\", "\\")
-        fields[key] = val
+        fields[lm.group(1)] = unquote(lm.group(2).strip())
     return fields
 
 

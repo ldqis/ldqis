@@ -112,55 +112,41 @@ const people = defineCollection({
   // `({ image })` unlocks the image() helper so `avatar` can be an optimized
   // local image (Astro processes + hashes it at build).
   schema: ({ image }) =>
-    z
-      .object({
-        // Shown when there is no photo; blank derives them from the name.
-        initials: blankable(z.string().min(1).max(3)),
-        name: z.string(),
-        role: z.string(),
-        email: blankable(z.email()),
-        // Optional Google Scholar profile URL. When set, the homepage team
-        // card + the per-person detail page render a "Google Scholar" link
-        // alongside the email button. Constrained to the scholar.google.com
-        // host so a typo in the frontmatter (e.g. dropping the URL or
-        // pasting a researchgate link) doesn't silently surface as an
-        // ambiguous external link.
-        // Link fields share their checks with the CMS form (src/lib/profile-fields.ts).
-        scholar: blankable(z.url().regex(P.scholar.pattern, P.scholar.message)),
-        ieee: blankable(z.url().regex(P.ieee.pattern, P.ieee.message)),
-        website: blankable(z.url()),
-        // GitHub *handle*: drives the GitHub link and, without an `avatar`, the photo.
-        github: blankable(z.string().regex(P.github.pattern, P.github.message)),
-        linkedin: blankable(z.url().regex(P.linkedin.pattern, P.linkedin.message)),
-        youtube: blankable(z.url().regex(P.youtube.pattern, P.youtube.message)),
-        // ORCID iD in canonical 0000-0000-0000-0000 form (the link is built from it).
-        orcid: blankable(z.string().regex(P.orcid.pattern, P.orcid.message)),
-        // Profile photo: drop a file in src/content/people/avatars/ and set
-        // `avatar: ./avatars/your-name.jpg`. Astro optimizes it. Falls back to the
-        // GitHub avatar (if `github` set), then initials.
-        avatar: image().optional(),
-        // Years in the lab: a start year and an end year or "present", both picked from
-        // dropdowns in the CMS. The card shows "2021–present".
-        years_from: z.number().int().min(LAB_FIRST_YEAR).optional(),
-        years_to: z.union([z.literal(PRESENT), z.number().int().min(LAB_FIRST_YEAR)]).optional(),
-        cohort: z.enum(["current", "past"]),
-        lead: z.boolean().optional(),
-        order: z.number().int().nonnegative(),
-      })
-      .refine((p) => p.years_to === undefined || p.years_from !== undefined, {
-        message: "Years in the lab: pick the year you started too",
-        path: ["years_from"],
-      })
-      .refine(
-        (p) =>
-          typeof p.years_to !== "number" ||
-          p.years_from === undefined ||
-          p.years_to >= p.years_from,
-        {
-          message: "Years in the lab: the end year comes before the start year",
-          path: ["years_to"],
-        },
-      ),
+    z.object({
+      // Shown when there is no photo; blank derives them from the name.
+      initials: blankable(z.string().min(1).max(3)),
+      name: z.string(),
+      role: z.string(),
+      email: blankable(z.email()),
+      // Optional Google Scholar profile URL. When set, the homepage team
+      // card + the per-person detail page render a "Google Scholar" link
+      // alongside the email button. Constrained to the scholar.google.com
+      // host so a typo in the frontmatter (e.g. dropping the URL or
+      // pasting a researchgate link) doesn't silently surface as an
+      // ambiguous external link.
+      // Link fields share their checks with the CMS form (src/lib/profile-fields.ts).
+      scholar: blankable(z.url().regex(P.scholar.pattern, P.scholar.message)),
+      ieee: blankable(z.url().regex(P.ieee.pattern, P.ieee.message)),
+      website: blankable(z.url()),
+      // GitHub *handle*: drives the GitHub link and, without an `avatar`, the photo.
+      github: blankable(z.string().regex(P.github.pattern, P.github.message)),
+      linkedin: blankable(z.url().regex(P.linkedin.pattern, P.linkedin.message)),
+      youtube: blankable(z.url().regex(P.youtube.pattern, P.youtube.message)),
+      // ORCID iD in canonical 0000-0000-0000-0000 form (the link is built from it).
+      orcid: blankable(z.string().regex(P.orcid.pattern, P.orcid.message)),
+      // Profile photo: a file in src/content/people/avatars/<card>/, set as
+      // `avatar: ./avatars/<card>/<file>` (the CMS does both). Astro optimizes it. Falls
+      // back to the GitHub avatar (if `github` set), then initials.
+      avatar: image().optional(),
+      // Years in the lab: a start year and an end year or "present", both picked from
+      // dropdowns in the CMS. The card shows "2021–present". The form cannot compare the
+      // two, so the build accepts any pair and formatYears shows what makes sense.
+      years_from: z.number().int().min(LAB_FIRST_YEAR).optional(),
+      years_to: z.union([z.literal(PRESENT), z.number().int().min(LAB_FIRST_YEAR)]).optional(),
+      cohort: z.enum(["current", "past"]),
+      lead: z.boolean().optional(),
+      order: z.number().int().nonnegative(),
+    }),
 });
 
 // News / blog posts — dated, optional tags + author. Field names match

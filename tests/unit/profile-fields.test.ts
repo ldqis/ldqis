@@ -23,6 +23,12 @@ describe("formatYears", () => {
 
   it("shows nothing without a start year", () => {
     expect(formatYears()).toBe("");
+    expect(formatYears(undefined, 2019)).toBe("");
+    expect(formatYears(undefined, PRESENT)).toBe("");
+  });
+
+  it("puts a reversed pair in order", () => {
+    expect(formatYears(2020, 2018)).toBe("2018–2020");
   });
 });
 
@@ -87,6 +93,29 @@ describe("the profile form intake", () => {
     expect(parse("2021 to present")).toBe('[2021, "present"]');
     expect(parse("since 2021")).toBe('[2021, "present"]');
     expect(parse("2019")).toBe("[2019, null]");
+  });
+
+  it("keeps a closed range closed when the text mentions a later job", () => {
+    expect(parse("2016–2019 (now at Google)")).toBe("[2016, 2019]");
+    expect(parse("2016-2019, currently at IBM")).toBe("[2016, 2019]");
+  });
+
+  it("reads a card's single-quoted and double-quoted values", () => {
+    const unquote = (raw: string) =>
+      execFileSync(
+        "python3",
+        [
+          "-c",
+          "import json,sys; sys.path.insert(0,'scripts'); import profile_intake as p; " +
+            "print(json.dumps(p.unquote(sys.argv[1])))",
+          raw,
+        ],
+        { encoding: "utf8" },
+      ).trim();
+    expect(unquote("''")).toBe('""');
+    expect(unquote("'Dr. Jane O''Brien'")).toBe(`"Dr. Jane O'Brien"`);
+    expect(unquote('"say \\"hi\\""')).toBe('"say \\"hi\\""');
+    expect(unquote("plain")).toBe('"plain"');
   });
 
   it("refuses a count, a reversed range, or a year outside the lab's span", () => {

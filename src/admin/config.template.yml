@@ -86,7 +86,6 @@ collections:
       - label: Name
         name: name
         widget: string
-        unique: true
         hint: "As it should appear on the site, for example Dr. Jane Doe"
       - label: Role
         name: role
