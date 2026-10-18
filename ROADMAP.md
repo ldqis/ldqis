@@ -83,6 +83,13 @@ ideas. These were weighed and declined, recorded so they aren't re-proposed:
 
 Highlights below; full history in git.
 
+- **2026-10-18: A People page.** `/people/` carries the current team and every past
+  researcher; the homepage keeps the current team and links to the full roster, so it stays a
+  front door rather than a directory. Nav "People" and the footer's Alumni link point there,
+  and person pages link back to it. research(2026-10): university web guidance and peer lab
+  sites put the full roster on its own page and keep the homepage to purpose, research, and
+  highlights.
+
 - **2026-10-18: One design language across the inner pages.** Person, project, publication, and
   news pages, the full publications list, and the 404 page drop boxed cards, all-caps labels,
   and pill tags for the homepage's hairline rules and serif sentence-case headings (a shared

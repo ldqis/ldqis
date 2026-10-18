@@ -5,7 +5,7 @@ import { ROUTES } from "./routes";
 // The lab's own links, absolute under the base so they work from every page.
 const LAB = {
   "Funded by": /^\/#funding$/,
-  Alumni: /^\/#alumni$/,
+  Alumni: /^\/people\/#alumni$/,
   Teaching: /^\/#teaching$/,
   "Join us": /^mailto:lrvcs@rit\.edu/,
   "Get in touch": /^mailto:lrvcs@rit\.edu$/,
