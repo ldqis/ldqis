@@ -9,8 +9,8 @@ interface Props {
 }
 
 const { p, experimentTotal, compact = false } = Astro.props;
-// Compact cards sit under the "Software" subheading, one level deeper.
-const Heading = compact ? "h4" : "h3";
+// Cards sit under the section's "Research projects" or "Agentic AI tools" subheading.
+const Heading = "h4";
 const base = import.meta.env.BASE_URL.replace(/\/$/, "");
 ---
 
@@ -53,5 +53,11 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, "");
         <span class="sr-only"> ({p.name})</span>
       </a>
     ))}
+    <a
+      href={`${base}/projects/${p.id}/`}
+      class="text-text-dim underline-offset-4 hover:text-rit-orange-text hover:underline"
+    >
+      Project page<span class="sr-only"> for {p.name}</span>
+    </a>
   </div>
 </article>

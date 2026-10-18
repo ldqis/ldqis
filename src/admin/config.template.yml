@@ -157,6 +157,14 @@ collections:
         search_fields: [name]
         display_fields: [name]
       - {
+          label: Feature on the homepage,
+          name: featured,
+          widget: boolean,
+          default: false,
+          required: false,
+          hint: "Selected publications shows only featured entries; keep it to the lab's strongest recent work",
+        }
+      - {
           label: Abstract / about this book,
           name: body,
           widget: markdown,
