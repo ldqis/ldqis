@@ -174,18 +174,30 @@ const people = defineCollection({
 // through to @astrojs/rss without re-mapping.
 const news = defineCollection({
   loader: glob({ pattern: "[^_]*.md", base: "./src/content/news" }),
-  schema: z.object({
-    title: z.string().min(1),
-    description: z.string().optional(),
-    summary: z.string().min(1).max(280),
-    pubDate: z.coerce.date(),
-    tags: z.array(z.string()).default([]),
-    author: z.string().default("LDQIS"),
-    // `draft: true` keeps a post out of indexes + RSS without removing the
-    // file. Future-dated posts (pubDate > now at build time) are also
-    // hidden — see news/index.astro + rss.xml.js filters.
-    draft: z.boolean().default(false),
-  }),
+  schema: ({ image }) =>
+    z
+      .object({
+        title: z.string().min(1),
+        description: z.string().optional(),
+        summary: z.string().min(1).max(280),
+        pubDate: z.coerce.date(),
+        tags: z.array(z.string()).default([]),
+        author: z.string().default("LDQIS"),
+        // `draft: true` keeps a post out of indexes + RSS without removing the
+        // file. Future-dated posts (pubDate > now at build time) are also
+        // hidden — see news/index.astro + rss.xml.js filters.
+        draft: z.boolean().default(false),
+        // research(2026-06): peer lab sites pair each news item with one image for scanability.
+        // Optional cover photo (src/content/news/images/), optimized by Astro; it needs alt text,
+        // and the caption credits the photographer.
+        cover: image().optional(),
+        coverAlt: blankable(z.string().min(1)),
+        coverCaption: blankable(z.string().min(1)),
+      })
+      .refine((d) => !d.cover || d.coverAlt, {
+        message: "coverAlt is required when a cover image is set",
+        path: ["coverAlt"],
+      }),
 });
 
 // research(2026-10): Astro ships no remote loader, so this is an object loader (it gets
