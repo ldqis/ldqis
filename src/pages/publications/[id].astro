@@ -133,7 +133,7 @@ const baseUrl = import.meta.env.BASE_URL.replace(/\/$/, "");
             href={`${baseUrl}/projects/${projectEntry.id}/`}
             class="inline-flex items-center gap-2 rounded-full border border-line px-[18px] py-[10px] text-sm hover:border-rit-orange hover:text-rit-orange-text"
           >
-            <span aria-hidden="true">⟨/⟩</span> Code · {projectEntry.data.name} →
+            Code: {projectEntry.data.name}
           </a>
         )}
       </div>

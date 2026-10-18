@@ -1,0 +1,19 @@
+---
+// A homepage section's label, headline and intro. The slot holds the intro paragraph's content.
+interface Props {
+  label: string;
+  title: string;
+}
+const { label, title } = Astro.props;
+---
+
+<p class="mb-4 text-sm font-medium text-rit-orange-text">{label}</p>
+<h2
+  class="mb-6 max-w-[22ch]"
+  style="font-family: var(--font-display); font-size: clamp(36px, 5vw, 56px); line-height: 1.05; letter-spacing: -1px; text-wrap: balance;"
+>
+  {title}
+</h2>
+<p class="mb-14 max-w-[64ch] text-lg text-text-dim">
+  <slot />
+</p>

@@ -1,0 +1,79 @@
+---
+// The hero's signature: the lab's real weekly experiment record (InteFL's experiment database),
+// drawn as one quiet strip of bars. It is decoration for sighted readers and a summary line for
+// everyone; the full, accessible chart lives on the project page.
+//
+// research(2026-10): the design-award rubric weights design and usability over spectacle, and
+// current motion practice is restraint: one purposeful moment, reduced-motion aware. So the bars
+// rise once on load and nowhere else. Sources: utsubo.com award-winning design guide,
+// motionkit.io web animation trends 2026.
+import { summarize, type ExperimentStats } from "../lib/experiment-stats";
+
+interface Props {
+  stats: ExperimentStats;
+  href: string;
+}
+
+const { stats, href } = Astro.props;
+const view = summarize(stats);
+const max = Math.max(1, ...view.weeks.map((w) => w.count));
+// A strip only reads as a record with at least two weeks and some activity; otherwise the
+// caption carries the count alone.
+const drawn = view.weeks.length >= 2 && view.weeks.some((w) => w.count > 0);
+---
+
+<figure class="hero-pulse">
+  {drawn && (
+    <div class="bars" aria-hidden="true" style={`--n: ${view.weeks.length}`}>
+      {view.weeks.map((w, i) => (
+        <span class:list={[w.count === 0 && "zero"]} style={`--h: ${w.count / max}; --i: ${i}`} />
+      ))}
+    </div>
+  )}
+  <figcaption
+    class:list={["flex flex-wrap items-baseline justify-between gap-x-8 gap-y-2", drawn && "mt-4"]}
+  >
+    <span class="text-sm text-text-dim">
+      {drawn
+        ? "Each bar is a week of federated-learning experiments in InteFL:"
+        : "Federated-learning experiments in InteFL:"}{" "}
+      {view.total.toLocaleString("en-US")} runs{view.since && ` since ${view.since}`}.
+    </span>
+    <a href={href} class="text-sm text-rit-orange-text underline-offset-4 hover:underline">
+      See the experiment record
+    </a>
+  </figcaption>
+</figure>
+
+<style>
+  .bars {
+    display: grid;
+    grid-template-columns: repeat(var(--n), minmax(0, 1fr));
+    column-gap: clamp(1px, 0.3vw, 4px);
+    align-items: end;
+    height: clamp(56px, 7vw, 88px);
+    border-bottom: 1px solid var(--color-line);
+  }
+  .bars span {
+    height: max(2px, calc(var(--h) * 100%));
+    border-radius: 2px 2px 0 0;
+    background: var(--color-rit-orange);
+    transform-origin: bottom;
+  }
+  .bars span.zero {
+    background: var(--color-line);
+  }
+
+  /* The page's one moment of motion: the record rises into place once, on load. */
+  @media (prefers-reduced-motion: no-preference) {
+    .bars span {
+      animation: rise 700ms cubic-bezier(0.2, 0.7, 0.2, 1) both;
+      animation-delay: calc(150ms + var(--i) * 14ms);
+    }
+  }
+  @keyframes rise {
+    from {
+      transform: scaleY(0);
+    }
+  }
+</style>

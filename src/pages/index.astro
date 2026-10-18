@@ -1,10 +1,11 @@
 ---
 import BaseLayout from "../layouts/BaseLayout.astro";
 import { getCollection } from "astro:content";
-import ContactLinks from "../components/ContactLinks.astro";
-import Avatar from "../components/Avatar.astro";
 import Nav from "../components/Nav.astro";
 import ProjectCard from "../components/ProjectCard.astro";
+import SectionHeader from "../components/SectionHeader.astro";
+import PersonCard from "../components/PersonCard.astro";
+import HeroPulse from "../components/HeroPulse.astro";
 import { byRecency } from "../lib/publications";
 import { SCHOLAR_URL } from "../lib/site-links";
 import allPubs from "../data/publications-all.json";
@@ -19,32 +20,26 @@ import allPubs from "../data/publications-all.json";
 
 const researchAreas = [
   {
-    n: "01",
     title: "Federated Learning",
-    desc: "Privacy-preserving model training across distributed clients — designing protocols, aggregation strategies, and threat models for collaborative ML without centralizing sensitive data.",
+    desc: "Privacy-preserving model training across distributed clients: designing protocols, aggregation strategies, and threat models for collaborative ML without centralizing sensitive data.",
   },
   {
-    n: "02",
     title: "Data Quality at Scale",
     desc: "Provable quality metrics for streaming sensor data, with frameworks for evaluating fitness-for-purpose across heterogeneous sources.",
   },
   {
-    n: "03",
     title: "ML System Security",
     desc: "Adversarial robustness, model integrity, and runtime monitoring for ML systems deployed in safety-critical environments.",
   },
   {
-    n: "04",
     title: "Edge Intelligence",
     desc: "Neural network architectures and inference systems designed for the power, privacy, and reliability constraints of edge deployment.",
   },
   {
-    n: "05",
     title: "Verifiable Mobile Security",
-    desc: "Building on the lab's shipped Android apps — Android System Security Evaluation and Detector of Unverified Apps on Google Play — into continuous verification for app supply-chain integrity.",
+    desc: "Building on the lab's shipped Android apps (Android System Security Evaluation and Detector of Unverified Apps on Google Play) into continuous verification for app supply-chain integrity.",
   },
   {
-    n: "06",
     title: "Open-Source Tooling",
     desc: "Releasing reproducible benchmarks, evaluation frameworks, and reference implementations the community can build on.",
   },
@@ -59,14 +54,14 @@ const researchAreas = [
 const funders = [
   {
     agency: "National Science Foundation",
-    program: "Ideas Lab — Smarter Microbial Observatories for Realtime Experiments (SMORES)",
+    program: "Ideas Lab: Smarter Microbial Observatories for Realtime Experiments (SMORES)",
     award: "#2321652",
     years: "2023–2027",
     url: "https://www.nsf.gov/awardsearch/show-award/?AWD_ID=2321652",
   },
   {
     agency: "National Science Foundation",
-    program: "IMPRESS-U — Robust Machine Learning for Object Detection & Classification",
+    program: "IMPRESS-U: Robust Machine Learning for Object Detection & Classification",
     award: "#2415299",
     years: "2024–2027",
     url: "https://www.nsf.gov/awardsearch/show-award/?AWD_ID=2415299",
@@ -74,7 +69,7 @@ const funders = [
   {
     agency: "National Science Foundation",
     program:
-      "CICI Data Provenance — Data Quality & Security Evaluation Framework for Mobile Platforms",
+      "CICI Data Provenance: Data Quality & Security Evaluation Framework for Mobile Platforms",
     award: "#1547301",
     years: "2016–2021",
     url: "https://www.nsf.gov/awardsearch/show-award/?AWD_ID=1547301",
@@ -129,10 +124,11 @@ const projects = projectEntries
 const research = projects.filter((p) => p.kind === "research");
 const software = projects.filter((p) => p.kind === "software");
 
-// Projects with an experiment database get a run count on their card.
-const experimentTotals = new Map(
-  (await getCollection("experimentStats")).map((s) => [s.id, s.data.total_experiments]),
-);
+// Projects with an experiment database get a run count on their card; InteFL's record also
+// draws the hero strip.
+const experimentEntries = await getCollection("experimentStats");
+const experimentTotals = new Map(experimentEntries.map((s) => [s.id, s.data.total_experiments]));
+const inteflStats = experimentEntries.find((s) => s.id === "intefl");
 
 // Lookup for the optional publication → project "Code" cross-link below.
 const projectNamesById = new Map(projectEntries.map((p) => [p.id, p.data.name]));
@@ -167,143 +163,111 @@ const pastCohort = peopleEntries
     {/* HERO */}
     <header class="relative pt-[120px] pb-[100px]">
       <div class="mx-auto max-w-[1200px] px-6">
-        <div class="mb-8 inline-flex items-center gap-2 rounded-full border border-line bg-bg-soft px-3 py-[6px] text-xs text-text-dim">
-          <span
-            class="h-[6px] w-[6px] rounded-full bg-rit-orange"
-            style="box-shadow: 0 0 12px var(--color-rit-orange);"
-          ></span>
-          Rochester Institute of Technology · Department of Computer Science
-        </div>
+        <p class="mb-8 text-sm text-text-dim">
+          Laboratory of Data Quality and Intelligent Security, Department of Computer Science,
+          Rochester Institute of Technology
+        </p>
         {/* The <br /> sets the two lines; a ch-based max-width would wrap differently in the
             fallback font than in Instrument Serif and shift the page when the font arrives. */}
         <h1
           class="mb-7"
-          style="font-family: var(--font-display); font-size: clamp(48px, 8vw, 96px); font-weight: 400; line-height: 1.02; letter-spacing: -2px;"
+          style="font-family: var(--font-display); font-size: clamp(48px, 8vw, 104px); font-weight: 400; line-height: 1; letter-spacing: -2px;"
         >
           Trustworthy data.
           <br />
-          <em class="italic" style="color: var(--color-rit-orange-text);">
-            Intelligent
-          </em>{" "}
-          security.
+          <em class="italic">Intelligent security.</em>
         </h1>
         <p class="mb-10 max-w-[56ch] text-lg text-text-dim">
-          The Laboratory of Data Quality and Intelligent Security at RIT builds the methods, models,
-          and systems that make modern data infrastructure verifiable, resilient, and worthy of
-          trust — from sensor networks at the edge to large-scale ML systems at the core.
+          We build the methods, models, and systems that make modern data infrastructure verifiable,
+          resilient, and worthy of trust, from sensor networks at the edge to large-scale machine
+          learning at the core.
         </p>
         <div class="flex flex-wrap gap-[14px]">
           <a
             href="#research"
-            class="inline-flex items-center gap-2 rounded-full px-[22px] py-[14px] text-sm font-medium transition-transform hover:-translate-y-[1px]"
+            class="inline-flex items-center rounded-full px-[22px] py-[14px] text-sm font-medium transition-transform hover:-translate-y-[1px]"
             style="background: var(--color-rit-orange); color: #0a0e13;"
           >
-            Explore the research →
+            Explore the research
           </a>
           <a
             href="#support"
-            class="inline-flex items-center gap-2 rounded-full border border-line px-[22px] py-[14px] text-sm font-medium text-text hover:border-text-dim"
+            class="inline-flex items-center rounded-full border border-line px-[22px] py-[14px] text-sm font-medium text-text hover:border-text-dim"
           >
             Support our work
           </a>
         </div>
 
-        {/* STATS */}
-        <div
-          class="mt-20 grid grid-cols-2 gap-px overflow-hidden rounded-[14px] border border-line md:grid-cols-4"
-          style="background: var(--color-line);"
-        >
-          {[
-            // Counted from the projects collection, so it never drifts from the list below.
-            { num: `${projects.length}`, label: "Open-source projects" },
-            { num: "25+", label: "Researchers trained" },
-            // research(2026-06): the live count of the imported publication
-            // record (`allPubs.length` from src/data/publications-all.json) —
-            // Dr. Reznik's complete OpenAlex-indexed body of work, the same
-            // figure the /publications page shows. Dynamic so it never drifts;
-            // the trailing "+" hedges OpenAlex coverage gaps. Replaces a
-            // hand-scoped "90+" RIT-era CV estimate that undercounted the record.
-            { num: `${allPubs.length}+`, label: "Peer-reviewed publications" },
-            // research(2026-05): RIT lab era. L. Reznik joined RIT ~2003
-            // (Victoria U. 1996-2001, UT El Paso ~2002), so ~22 years;
-            // "20+" rounds down. Pre-RIT career work is excluded here.
-            { num: "20+", label: "Years of research" },
-          ].map(({ num, label }) => (
-            <div class="bg-bg px-6 py-7">
-              <div style="font-family: var(--font-display); font-size: 44px; line-height: 1; color: var(--color-rit-orange-text);">
-                {num}
-              </div>
-              <div class="mt-[6px] text-[13px] tracking-[0.5px] text-text-dim uppercase">
-                {label}
-              </div>
-            </div>
-          ))}
-        </div>
+        {inteflStats && (
+          <div class="mt-20">
+            <HeroPulse
+              stats={inteflStats.data}
+              href={`${import.meta.env.BASE_URL.replace(/\/$/, "")}/projects/intefl/#experiments`}
+            />
+          </div>
+        )}
+
+        {/* research(2026-05): Dr. Reznik joined RIT around 2003 (no source gives the exact year),
+            so "over 20 years" rounds down. research(2026-06): the publication count is his whole imported record
+            (src/data/publications-all.json, the figure /publications shows), which starts in 1981
+            and includes books and chapters, so it is attributed to his record, not to the lab's
+            RIT years; "+" hedges OpenAlex coverage gaps. The project count is the collection. */}
+        <p class="mt-8 max-w-[64ch] text-[15px] text-text-dim">
+          For over 20 years the lab has trained 25+ researchers and released {projects.length}{" "}
+          open-source projects, and Dr. Reznik's publication record spans {allPubs.length}+ papers,
+          books, and chapters.
+        </p>
       </div>
     </header>
 
     {/* RESEARCH AREAS */}
     <section id="research" class="relative py-[100px]">
       <div class="mx-auto max-w-[1200px] px-6">
-        <div class="mb-4 text-xs tracking-[1.5px] text-rit-orange-text uppercase">
-          Research Areas
-        </div>
-        <h2
-          class="mb-6 max-w-[22ch]"
-          style="font-family: var(--font-display); font-size: clamp(36px, 5vw, 56px); line-height: 1.05; letter-spacing: -1px; text-wrap: balance;"
-        >
-          Six frontiers we're pushing in parallel.
-        </h2>
-        <p class="mb-14 max-w-[64ch] text-lg text-text-dim">
-          Our work sits at the intersection of data quality, security, and intelligent systems —
-          with a hard focus on what's deployable, measurable, and trustworthy.
-        </p>
-        <div class="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
+        <SectionHeader label="Research areas" title="Six frontiers we're pushing in parallel.">
+          Our work sits at the intersection of data quality, security, and intelligent systems, with
+          a hard focus on what's deployable, measurable, and trustworthy.
+        </SectionHeader>
+        <ul class="grid grid-cols-1 gap-x-12 md:grid-cols-2 lg:grid-cols-3" role="list">
           {researchAreas.map((area) => (
-            <article class="rounded-[14px] border border-line bg-bg-elev p-8 transition-all hover:-translate-y-[2px] hover:border-rit-orange">
-              <span
-                class="mb-6 block text-sm italic"
-                style="font-family: var(--font-display); color: var(--color-rit-orange-text);"
+            <li class="border-t border-line pt-6 pb-12">
+              <h3
+                class="mb-3 text-text"
+                style="font-family: var(--font-display); font-size: 28px; line-height: 1.1; letter-spacing: -0.4px;"
               >
-                — {area.n}
-              </span>
-              <div class="mb-3 text-[22px] leading-[1.2] font-medium">{area.title}</div>
-              <p class="text-[15px] text-text-dim">{area.desc}</p>
-            </article>
+                {area.title}
+              </h3>
+              <p class="max-w-[42ch] text-[15px] leading-relaxed text-text-dim">{area.desc}</p>
+            </li>
           ))}
-        </div>
+        </ul>
       </div>
     </section>
 
     {/* PROJECTS */}
     <section id="projects" data-pagefind-ignore class="relative py-[100px]">
       <div class="mx-auto max-w-[1200px] px-6">
-        <div class="mb-4 text-xs tracking-[1.5px] text-rit-orange-text uppercase">
-          Active Projects
-        </div>
-        <h2
-          class="mb-6 max-w-[22ch]"
-          style="font-family: var(--font-display); font-size: clamp(36px, 5vw, 56px); line-height: 1.05; letter-spacing: -1px; text-wrap: balance;"
-        >
-          What we're shipping right now.
-        </h2>
-        <p class="mb-14 max-w-[64ch] text-lg text-text-dim">
-          Open-source frameworks, peer-reviewed methods, and end-to-end systems — built by the
+        <SectionHeader label="Projects" title="What we're shipping right now.">
+          Open-source frameworks, peer-reviewed methods, and end-to-end systems, built by the
           current cohort and used by researchers beyond LDQIS.
-        </p>
-        <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
+        </SectionHeader>
+        <div class="grid grid-cols-1 gap-x-12 md:grid-cols-2">
           {research.map((p) => (
             <ProjectCard p={p} experimentTotal={experimentTotals.get(p.id)} />
           ))}
         </div>
         {software.length > 0 && (
           <>
-            <h3 class="mt-20 mb-3 text-2xl font-medium text-text">Software</h3>
+            <h3
+              class="mt-16 mb-3 text-text"
+              style="font-family: var(--font-display); font-size: 36px; line-height: 1.1; letter-spacing: -0.5px;"
+            >
+              Software
+            </h3>
             <p class="mb-8 max-w-[64ch] text-text-dim">
               Tools built in the lab for everyday research and development work, free for anyone to
               use.
             </p>
-            <div class="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
+            <div class="grid grid-cols-1 gap-x-12 md:grid-cols-2 lg:grid-cols-3">
               {software.map((p) => (
                 <ProjectCard p={p} compact />
               ))}
@@ -316,14 +280,7 @@ const pastCohort = peopleEntries
     {/* PUBLICATIONS */}
     <section id="publications" data-pagefind-ignore class="relative py-[100px]">
       <div class="mx-auto max-w-[1200px] px-6">
-        <div class="mb-4 text-xs tracking-[1.5px] text-rit-orange-text uppercase">Publications</div>
-        <h2
-          class="mb-6 max-w-[22ch]"
-          style="font-family: var(--font-display); font-size: clamp(36px, 5vw, 56px); line-height: 1.05; letter-spacing: -1px; text-wrap: balance;"
-        >
-          Selected publications.
-        </h2>
-        <p class="mb-14 max-w-[64ch] text-lg text-text-dim">
+        <SectionHeader label="Publications" title="Selected publications.">
           A handful of highlights from the lab's work. See the full publication record below, or Dr.
           Reznik's{" "}
           <a
@@ -336,35 +293,31 @@ const pastCohort = peopleEntries
             Google Scholar profile
           </a>{" "}
           for citation metrics.
-        </p>
-        <div class="flex flex-col gap-4">
+        </SectionHeader>
+        <ol class="divide-y divide-line border-y border-line" role="list">
           {publications.map((pub) => (
-            <article class="grid grid-cols-1 items-center gap-6 rounded-[14px] border border-line bg-bg-elev p-6 hover:border-rit-orange md:grid-cols-[auto_1fr_auto] md:px-7">
+            <li class="grid grid-cols-1 gap-x-8 gap-y-2 py-7 md:grid-cols-[88px_1fr_auto]">
               <div
-                class="text-4xl leading-none"
-                style="font-family: var(--font-display); color: var(--color-rit-orange-text); letter-spacing: -1px;"
+                class="text-text-faint"
+                style="font-family: var(--font-display); font-size: 30px; line-height: 1; letter-spacing: -0.5px;"
               >
                 {pub.year}
               </div>
               <div class="min-w-0">
-                <div class="mb-[6px] text-[11px] tracking-[1.5px] text-text-faint uppercase">
-                  {pub.venue}
-                </div>
+                <p class="mb-1 text-[13px] text-text-faint">{pub.venue}</p>
                 <a
                   href={`${import.meta.env.BASE_URL.replace(/\/$/, "")}/publications/${pub.id}/`}
-                  class="mb-1 inline-block text-[17px] leading-[1.35] font-medium hover:text-rit-orange-text"
+                  class="mb-1 inline-block max-w-[70ch] text-[18px] leading-[1.35] font-medium hover:text-rit-orange-text"
                 >
                   {pub.title}
                 </a>
-                <div class="text-[13px] text-text-dim">{pub.authors}</div>
+                <p class="text-[14px] text-text-dim">{pub.authors}</p>
                 {pub.project && (
                   <a
                     href={`${import.meta.env.BASE_URL.replace(/\/$/, "")}/projects/${pub.project.id}/`}
-                    class="mt-[6px] inline-flex items-center gap-1 text-[12px] hover:underline"
-                    style="color: var(--color-rit-orange-text);"
+                    class="mt-2 inline-block text-[13px] text-rit-orange-text underline-offset-4 hover:underline"
                   >
-                    <span aria-hidden="true">⟨/⟩</span> Code ·{" "}
-                    {projectNamesById.get(pub.project.id)} →
+                    Code: {projectNamesById.get(pub.project.id)}
                   </a>
                 )}
               </div>
@@ -372,19 +325,20 @@ const pastCohort = peopleEntries
                 href={pub.link.href}
                 target="_blank"
                 rel="noopener"
-                class="inline-flex items-center gap-[6px] justify-self-start rounded-full border border-line px-[14px] py-2 text-[13px] whitespace-nowrap text-text-dim hover:border-rit-orange hover:text-rit-orange-text md:justify-self-auto"
+                class="self-start text-sm whitespace-nowrap text-rit-orange-text underline-offset-4 hover:underline"
               >
                 {pub.link.label}
+                <span class="sr-only"> ({pub.title})</span>
               </a>
-            </article>
+            </li>
           ))}
-        </div>
+        </ol>
         <div class="mt-12">
           <a
             href={`${import.meta.env.BASE_URL.replace(/\/$/, "")}/publications/`}
-            class="inline-flex items-center gap-2 rounded-full border border-line px-[22px] py-[14px] text-sm font-medium text-text hover:border-rit-orange hover:text-rit-orange-text"
+            class="text-[15px] font-medium text-rit-orange-text underline-offset-4 hover:underline"
           >
-            See all {allPubs.length} publications →
+            See all {allPubs.length} publications
           </a>
         </div>
       </div>
@@ -398,137 +352,43 @@ const pastCohort = peopleEntries
       style="background: var(--color-bg-elev); border-top: 1px solid var(--color-line); border-bottom: 1px solid var(--color-line);"
     >
       <div class="mx-auto max-w-[1200px] px-6">
-        <div class="mb-4 text-xs tracking-[1.5px] text-rit-orange-text uppercase">People</div>
-        <h2
-          class="mb-6 max-w-[22ch]"
-          style="font-family: var(--font-display); font-size: clamp(36px, 5vw, 56px); line-height: 1.05; letter-spacing: -1px; text-wrap: balance;"
-        >
-          The team — past and present.
-        </h2>
-        <p class="mb-14 max-w-[64ch] text-lg text-text-dim">
+        <SectionHeader label="People" title="The team, past and present.">
           LDQIS is the work of every researcher who has passed through it. Today's team is pushing
           on federated learning and agentic AI; previous cohorts built the foundations in mobile
           security, data quality evaluation, wearable sensors, and computational intelligence that
           made today's work possible.
-        </p>
+        </SectionHeader>
 
-        <div class="mb-6 flex items-baseline gap-4">
-          <span
-            class="text-[11px] tracking-[1.5px] uppercase"
-            style="color: var(--color-rit-orange-text);"
-          >
-            Now
-          </span>
-          <h3
-            class="font-normal"
-            style="font-family: var(--font-display); font-size: 28px; letter-spacing: -0.5px;"
-          >
-            Current Team
-          </h3>
-          <span class="text-[13px] text-text-dim">Federated learning · Agentic AI</span>
-        </div>
-
-        <div class="grid grid-cols-1 gap-5 sm:grid-cols-2 md:grid-cols-4">
+        <h3
+          class="mb-2 text-text"
+          style="font-family: var(--font-display); font-size: 36px; line-height: 1.1; letter-spacing: -0.5px;"
+        >
+          Current team
+        </h3>
+        <p class="mb-8 text-text-dim">Working on federated learning and agentic AI.</p>
+        <div class="grid grid-cols-1 gap-x-10 sm:grid-cols-2 md:grid-cols-4">
           {currentTeam.map((p) => (
-            <div
-              class={`rounded-[14px] border border-line bg-bg-elev p-6 transition-colors hover:border-rit-orange ${p.lead ? "sm:col-span-2 md:col-span-2" : ""}`}
-              style={
-                p.lead
-                  ? "background: linear-gradient(135deg, var(--color-bg-elev), var(--color-bg-soft));"
-                  : undefined
-              }
-            >
-              <div class="mb-4 flex items-center gap-3">
-                <Avatar
-                  avatar={p.avatar}
-                  github={p.github}
-                  initials={p.initials}
-                  name={p.name}
-                  transitionName={`avatar-${p.id}`}
-                />
-                <a
-                  href={`${import.meta.env.BASE_URL.replace(/\/$/, "")}/people/${p.id}/`}
-                  class="inline-block text-base font-medium hover:text-rit-orange-text"
-                >
-                  {p.name}
-                </a>
-              </div>
-              <div class="text-[13px] text-text-dim">{p.role}</div>
-              {p.years && <div class="mt-1 text-xs text-text-dim">{p.years}</div>}
-              <ContactLinks
-                email={p.email}
-                scholar={p.scholar}
-                ieee={p.ieee}
-                website={p.website}
-                github={p.github}
-                linkedin={p.linkedin}
-                youtube={p.youtube}
-                orcid={p.orcid}
-                name={p.name}
-              />
-            </div>
+            <PersonCard p={p} />
           ))}
         </div>
 
-        <div class="mt-14 mb-6 flex items-baseline gap-4 border-t border-line pt-4">
-          <span
-            class="text-[11px] tracking-[1.5px] uppercase"
-            style="color: var(--color-rit-orange-text);"
-          >
-            Then
-          </span>
-          <h3
-            id="alumni"
-            class="font-normal"
-            style="font-family: var(--font-display); font-size: 28px; letter-spacing: -0.5px;"
-          >
-            Past Research Cohort
-          </h3>
-          <span class="text-[13px] text-text-dim">
-            Mobile security · Android attacks · Wearable sensors · Data quality · Computational
-            intelligence
-          </span>
-        </div>
-
-        <p class="mb-8 max-w-[64ch] text-sm text-text-dim">
+        <h3
+          id="alumni"
+          class="mt-16 mb-2 text-text"
+          style="font-family: var(--font-display); font-size: 36px; line-height: 1.1; letter-spacing: -0.5px;"
+        >
+          Past research cohort
+        </h3>
+        <p class="mb-8 max-w-[64ch] text-text-dim">
           These researchers led work that remains foundational to LDQIS today, including our Android
           security apps, the NSF Data Quality &amp; Security Evaluation Framework, and the
           wearable-sensors and computational-intelligence research lines that preceded today's
-          federated learning work.
+          federated learning work. Their topics ranged from mobile security and Android attacks to
+          wearable sensors, data quality, and computational intelligence.
         </p>
-
-        <div class="grid grid-cols-1 gap-5 sm:grid-cols-2 md:grid-cols-4">
+        <div class="grid grid-cols-1 gap-x-10 sm:grid-cols-2 md:grid-cols-4">
           {pastCohort.map((p) => (
-            <div class="rounded-[14px] border border-line bg-bg-elev p-6 transition-colors hover:border-rit-orange">
-              <div class="mb-4 flex items-center gap-3">
-                <Avatar
-                  avatar={p.avatar}
-                  github={p.github}
-                  initials={p.initials}
-                  name={p.name}
-                  transitionName={`avatar-${p.id}`}
-                />
-                <a
-                  href={`${import.meta.env.BASE_URL.replace(/\/$/, "")}/people/${p.id}/`}
-                  class="inline-block text-base font-medium hover:text-rit-orange-text"
-                >
-                  {p.name}
-                </a>
-              </div>
-              <div class="text-[13px] text-text-dim">{p.role}</div>
-              {p.years && <div class="mt-1 text-xs text-text-dim">{p.years}</div>}
-              <ContactLinks
-                email={p.email}
-                scholar={p.scholar}
-                ieee={p.ieee}
-                website={p.website}
-                github={p.github}
-                linkedin={p.linkedin}
-                youtube={p.youtube}
-                orcid={p.orcid}
-                name={p.name}
-              />
-            </div>
+            <PersonCard p={p} compact />
           ))}
         </div>
       </div>
@@ -537,18 +397,10 @@ const pastCohort = peopleEntries
     {/* TEACHING */}
     <section id="teaching" class="relative py-[100px]">
       <div class="mx-auto max-w-[1200px] px-6">
-        <div class="mb-4 text-xs tracking-[1.5px] text-rit-orange-text uppercase">Teaching</div>
-        <h2
-          class="mb-6 max-w-[22ch]"
-          style="font-family: var(--font-display); font-size: clamp(36px, 5vw, 56px); line-height: 1.05; letter-spacing: -1px; text-wrap: balance;"
-        >
-          From the lecture hall to the lab.
-        </h2>
-        <p class="mb-14 max-w-[64ch] text-lg text-text-dim">
-          Lab members teach across RIT's undergraduate and graduate computer science curriculum —
+        <SectionHeader label="Teaching" title="From the lecture hall to the lab.">
+          Lab members teach across RIT's undergraduate and graduate computer science curriculum, in
           the same areas the lab researches, from intelligent systems and security measurement to
-          neural networks and intelligent security. For schedules and current materials, see Dr.
-          Reznik's{" "}
+          neural networks and intelligent security. Dr. Reznik's{" "}
           <a
             href="https://www.cs.rit.edu/~lr/"
             target="_blank"
@@ -557,36 +409,34 @@ const pastCohort = peopleEntries
             style="color: var(--color-rit-orange-text); border-color: color-mix(in oklab, var(--color-rit-orange) 8%, transparent);"
           >
             course pages
-          </a>
-          .
-        </p>
-        <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
+          </a>{" "}
+          have schedules and current materials.
+        </SectionHeader>
+        <div class="grid grid-cols-1 gap-x-12 gap-y-12 md:grid-cols-2">
           {["Undergraduate", "Graduate"].map((level) => {
             const items = courses.filter((c) => c.level === level);
             return (
-              <article class="rounded-[14px] border border-line bg-bg-elev p-8">
-                <div class="mb-6 flex items-baseline justify-between gap-3">
+              <div>
+                <div class="mb-4 flex items-baseline justify-between gap-4">
                   <h3
-                    class="font-normal"
-                    style="font-family: var(--font-display); font-size: 22px; letter-spacing: -0.5px;"
+                    class="text-text"
+                    style="font-family: var(--font-display); font-size: 28px; line-height: 1.1; letter-spacing: -0.4px;"
                   >
                     {level}
                   </h3>
-                  <span class="text-[12px] tracking-[1px] text-text-faint uppercase">
-                    {items.length} courses
-                  </span>
+                  <span class="text-[13px] text-text-faint">{items.length} courses</span>
                 </div>
-                <ul class="flex flex-col">
+                <ul class="border-t border-line">
                   {items.map((c) => (
-                    <li class="flex flex-col gap-1 border-t border-line py-4 first:border-t-0 first:pt-0 last:pb-0 sm:flex-row sm:items-baseline sm:gap-4">
-                      <span class="font-mono text-[12px] tracking-[0.5px] text-text-faint sm:w-[84px] sm:shrink-0">
+                    <li class="flex flex-col gap-1 border-b border-line py-4 sm:flex-row sm:items-baseline sm:gap-4">
+                      <span class="text-[13px] text-text-faint tabular-nums sm:w-[84px] sm:shrink-0">
                         {c.code}
                       </span>
                       <span class="text-[16px] leading-[1.3]">{c.title}</span>
                     </li>
                   ))}
                 </ul>
-              </article>
+              </div>
             );
           })}
         </div>
@@ -596,47 +446,35 @@ const pastCohort = peopleEntries
     {/* FUNDED BY */}
     <section id="funding" class="relative py-[100px]">
       <div class="mx-auto max-w-[1200px] px-6">
-        <div class="mb-4 text-xs tracking-[1.5px] text-rit-orange-text uppercase">Funded By</div>
-        <h2
-          class="mb-6 max-w-[22ch]"
-          style="font-family: var(--font-display); font-size: clamp(36px, 5vw, 56px); line-height: 1.05; letter-spacing: -1px; text-wrap: balance;"
-        >
-          Backed by competitive research awards.
-        </h2>
-        <p class="mb-14 max-w-[64ch] text-lg text-text-dim">
+        <SectionHeader label="Funded by" title="Backed by competitive research awards.">
           LDQIS research has been supported by the National Science Foundation, the U.S. Department
           of Defense, and CRDF Global with the U.S. Department of State.
-        </p>
-        <div class="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
+        </SectionHeader>
+        <ol class="divide-y divide-line border-y border-line" role="list">
           {funders.map((f) => (
-            <article class="flex flex-col rounded-[14px] border border-line bg-bg-elev p-8 transition-all hover:-translate-y-[2px] hover:border-rit-orange">
-              <div
-                class="mb-3 text-[11px] tracking-[1.5px] uppercase"
-                style="color: var(--color-rit-orange-text);"
-              >
-                {f.agency}
+            <li class="grid grid-cols-1 gap-x-8 gap-y-2 py-6 md:grid-cols-[1fr_auto] md:items-baseline">
+              <div>
+                <p class="mb-1 text-[13px] text-text-faint">{f.agency}</p>
+                <p class="max-w-[60ch] text-[18px] leading-[1.35] font-medium">{f.program}</p>
               </div>
-              <div class="mb-4 text-[19px] leading-[1.3] font-medium">{f.program}</div>
-              <div class="mt-auto flex flex-wrap items-center gap-x-3 gap-y-1 border-t border-line pt-[18px] text-[13px] text-text-dim">
-                <span class="font-mono text-text-faint">{f.award}</span>
-                <span aria-hidden="true">·</span>
-                <span>{f.years}</span>
+              <div class="flex flex-wrap items-baseline gap-x-5 gap-y-1 text-sm text-text-dim md:justify-end">
+                <span class="tabular-nums">Award {f.award.replace(/^#/, "")}</span>
+                <span class="tabular-nums">{f.years}</span>
                 {f.url && (
                   <a
                     href={f.url}
                     target="_blank"
                     rel="noopener"
-                    class="ml-auto inline-flex items-center gap-1 hover:text-rit-orange-text"
-                    style="color: var(--color-rit-orange-text);"
+                    class="text-rit-orange-text underline-offset-4 hover:underline"
                     aria-label={`View award ${f.award} on nsf.gov`}
                   >
-                    View award →
+                    View award
                   </a>
                 )}
               </div>
-            </article>
+            </li>
           ))}
-        </div>
+        </ol>
         <p class="mt-10 max-w-[80ch] text-xs leading-[1.7] text-text-faint">
           Any opinions, findings, and conclusions or recommendations expressed on this site are
           those of the authors and do not necessarily reflect the views of the National Science
@@ -657,12 +495,7 @@ const pastCohort = peopleEntries
             style="top: -50%; left: 50%; transform: translateX(-50%); width: 600px; height: 600px; background: radial-gradient(circle, color-mix(in oklab, var(--color-rit-orange) 8%, transparent), transparent 70%);"
           ></div>
           <div class="relative">
-            <div
-              class="mb-4 text-xs tracking-[1.5px] uppercase"
-              style="color: var(--color-rit-orange-text);"
-            >
-              Get Involved
-            </div>
+            <p class="mb-4 text-sm font-medium text-rit-orange-text">Get involved</p>
             <h3
               class="mx-auto mb-4 max-w-[22ch]"
               style="font-family: var(--font-display); font-size: clamp(32px, 4vw, 48px); line-height: 1.1;"
@@ -671,7 +504,7 @@ const pastCohort = peopleEntries
             </h3>
             <p class="mx-auto mb-8 max-w-[50ch] text-text-dim">
               Funding from individuals, foundations, and industry partners directly supports
-              graduate stipends, equipment, and open-source releases. Every contribution compounds —
+              graduate stipends, equipment, and open-source releases. Every contribution compounds:
               in students trained, papers published, and tools shipped.
             </p>
             <div class="flex flex-wrap justify-center gap-[14px]">
