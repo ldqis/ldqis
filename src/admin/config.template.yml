@@ -16,18 +16,23 @@
 backend:
   name: github
   repo: ldqis/ldqis
-  # research(2026-06): the CMS commits to an unprotected `cms` branch, not `main`.
-  # main requires status checks and GitHub rejects a direct CMS write to it
-  # ("required status checks are expected"); Sveltia has no PR/editorial mode yet.
-  # .github/workflows/cms-publish.yml bridges cms -> main via an auto-merged PR.
-  branch: cms
+  # research(2026-10): main is protected (required checks, squash only), so a save is a
+  # draft PR from cms/<collection>/<slug> (publish_mode below). Publish arms GitHub
+  # auto-merge while the checks run (Sveltia 0.248.0, sveltia/sveltia-cms#1094), and the
+  # merge, made as the editor, triggers the deploy. A `cms` branch must not exist: git
+  # cannot hold `cms` and `cms/...` refs at once.
+  branch: main
+  squash_merges: true
   # OAuth proxy (Cloudflare Worker) for password-free "Sign in with GitHub".
   base_url: https://ldqis-cms-auth.ajbareaa.workers.dev
   # Only GitHub OAuth on the login screen (no personal-access-token option).
   auth_methods: [oauth]
 
-# Local FS editing during `astro dev` — no auth or proxy needed.
-local_backend: true
+# Every save is a draft pull request; Publish merges it once the required checks pass.
+# Required fields are checked at save, since an incomplete draft would fail the PR's Build.
+publish_mode:
+  type: preview
+  allow_incomplete_drafts: false
 
 # Branding — match the LDQIS site instead of Sveltia's defaults. app_title
 # replaces the "Sveltia CMS" tab/login title; logo.src sets BOTH the entrance
@@ -86,6 +91,7 @@ collections:
       - label: Name
         name: name
         widget: string
+        unique: true
         hint: "As it should appear on the site, for example Dr. Jane Doe"
       - label: Role
         name: role
@@ -294,7 +300,7 @@ collections:
   - name: news
     label: News
     label_singular: Post
-    description: "News posts. Turn on **Draft** to save a post without publishing it."
+    description: "News posts. Turn on **Hide from the site** to keep a published post off the news page and its feed."
     icon: newspaper
     preview_path: "__BASE_PREFIX__news/{{slug}}/"
     folder: src/content/news
@@ -346,5 +352,5 @@ collections:
           required: false,
           field: { label: Tag, name: tag, widget: string },
         }
-      - { label: Draft, name: draft, widget: boolean, default: false }
+      - { label: Hide from the site, name: draft, widget: boolean, default: false }
       - { label: Body, name: body, widget: markdown }
