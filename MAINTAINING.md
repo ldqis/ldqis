@@ -84,6 +84,15 @@ checks are still running it arms GitHub auto-merge instead, and GitHub squash-me
 the editor once they pass, which triggers the deploy. This needs "Allow auto-merge" on in the
 repo settings, and no branch named plain `cms` (git cannot hold `cms` and `cms/...` at once).
 
+Two limits of this setup:
+
+- **The Assets page cannot save.** Uploading, renaming or deleting there commits straight to
+  `main`, and the ruleset rejects it. Sveltia only greys those buttons out when GitHub reports
+  classic branch protection, and `main` uses a ruleset instead. Photos and images uploaded inside
+  an entry go through its pull request and work.
+- **Publish right after Save can fail once.** If no check has started yet, Sveltia reports the
+  merge as failed instead of waiting. Press Publish again a few seconds later.
+
 ## Updating the CMS bundle
 
 `@sveltia/cms` is an exact-pinned npm dependency, so Dependabot bumps it like any other

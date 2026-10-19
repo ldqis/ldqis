@@ -7,10 +7,13 @@ longer-term plan lives in [ROADMAP.md](./ROADMAP.md); git history has the full r
 
 **CMS edits publish straight to `main`** (branch `feat/cms-publish-to-main`). Sveltia 0.248.0
 in `publish_mode: preview`, `squash_merges: true`; the `cms-publish`/`cms-sync` bridge is gone.
-Right after the deploy lands: delete the `cms` branch (its file diff against `main` is empty,
-and a `cms` ref blocks Sveltia's `cms/...` branches), remove the repo secret
-`CMS_APP_PRIVATE_KEY` and variable `CMS_APP_ID`, and archive the repro repo
-`ajbarea/sveltia-github-publish-repro`. An org owner uninstalls the `ldqis-cms-publisher` app.
+Right after the deploy lands, re-check then delete the `cms` branch (a `cms` ref blocks
+Sveltia's `cms/...` branches): `git diff --quiet origin/main origin/cms`, no open `cms-pub`
+PR, no CMS publish run in progress, because a tab still holding the old config (cached up to
+10 minutes) can write to `cms`. Then remove the repo secret `CMS_APP_PRIVATE_KEY` and variable
+`CMS_APP_ID`, and archive the repro repo `ajbarea/sveltia-github-publish-repro`. An org owner
+uninstalls the `ldqis-cms-publisher` app. The first real CMS edit after the switch should be
+watched: Publish while Build runs, then auto-merge on, squash merge as the editor, deploy runs.
 
 Local CMS testing without a GitHub sign-in: copy `src/content` to `public/__seed/` (never
 commit it), write it into the browser's private file storage with an empty `.git` folder,

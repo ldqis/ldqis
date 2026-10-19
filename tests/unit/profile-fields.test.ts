@@ -56,7 +56,7 @@ describe("the CMS publishing setup", () => {
     const doc = parse(await res.text());
     expect(doc.backend.branch).toBe("main");
     expect(doc.backend.squash_merges).toBe(true);
-    expect(doc.publish_mode).toBe("preview");
+    expect(doc.publish_mode).toEqual({ type: "preview", allow_incomplete_drafts: false });
   });
 });
 
