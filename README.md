@@ -69,7 +69,7 @@ The site targets WCAG 2.2 AA, enforced on every PR by axe-core + Playwright, wit
 
 If you're in the lab, there are two no-code ways onto the site, plus git if you prefer.
 
-**Edit anything (the CMS).** Ask a maintainer for write access to this repo, then sign in at [`/admin`](https://dataqualitylabs.com/admin/) with GitHub. You get a form editor for every person, project, publication, and news post: add, change, reorder, or delete. It commits and redeploys for you. Best for updating or fixing something that's already on the site.
+**Edit anything (the CMS).** Ask a maintainer for write access to this repo, then sign in at [`/admin`](https://dataqualitylabs.com/admin/) with GitHub. You get a form editor for every person, project, publication, and news post: add, change, reorder, or delete. Each save is a draft; press **Publish** and the site updates once its checks pass. Best for updating or fixing something that's already on the site.
 
 **No account needed (issue forms).** Fill one in and a maintainer gets a pull request to review, no files to touch.
 

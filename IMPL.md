@@ -5,21 +5,17 @@ longer-term plan lives in [ROADMAP.md](./ROADMAP.md); git history has the full r
 
 ## In progress
 
-**PR #195, CMS People form** (branch `feat/cms-ux`, worktree `.claude/worktrees/cms-ux`). The
-independent review's findings are fixed: the build no longer rejects a pair of years the form
-can save (an end year alone, or a reversed pair), `unique` is gone until the planned Sveltia upgrade
-(the option ships from 0.237.0), and the intake script reads single-quoted card values and keeps "2016-2019 (now
-at Google)" closed. After merge and deploy, open the live `/admin`, sign in, and confirm the
-People form loads with no config errors and the year dropdowns run 2003 to this year plus
-Present.
+**CMS edits publish straight to `main`** (branch `feat/cms-publish-to-main`). Sveltia 0.248.0
+in `publish_mode: preview`, `squash_merges: true`; the `cms-publish`/`cms-sync` bridge is gone.
+Right after the deploy lands: delete the `cms` branch (its file diff against `main` is empty,
+and a `cms` ref blocks Sveltia's `cms/...` branches), remove the repo secret
+`CMS_APP_PRIVATE_KEY` and variable `CMS_APP_ID`, and archive the repro repo
+`ajbarea/sveltia-github-publish-repro`. An org owner uninstalls the `ldqis-cms-publisher` app.
 
 Local CMS testing without a GitHub sign-in: copy `src/content` to `public/__seed/` (never
 commit it), write it into the browser's private file storage with an empty `.git` folder,
 override `window.showDirectoryPicker` to return `navigator.storage.getDirectory()`, then choose
 "Work with Local Repository" on `/admin/index.html` under `astro dev`.
-
-**Next after #195:** publish CMS edits straight to `main`. Sveltia v0.248.0 ships the fix
-(sveltia/sveltia-cms#1094); see the ROADMAP backlog entry.
 
 ## Known issues
 

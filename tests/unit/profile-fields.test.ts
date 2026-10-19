@@ -49,6 +49,17 @@ describe("labYears", () => {
   });
 });
 
+describe("the CMS publishing setup", () => {
+  it("saves drafts as pull requests to main and squash-merges them", async () => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- the endpoint only reads `site`
+    const res = await GET({ site: new URL("https://dataqualitylabs.com") } as any);
+    const doc = parse(await res.text());
+    expect(doc.backend.branch).toBe("main");
+    expect(doc.backend.squash_merges).toBe(true);
+    expect(doc.publish_mode).toBe("preview");
+  });
+});
+
 describe("the CMS people form", () => {
   const config = async () => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any -- the endpoint only reads `site`

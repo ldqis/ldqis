@@ -10,7 +10,6 @@ next maintainer.
 | Source, CI, GitHub Pages        | `ldqis/ldqis`                                                                                   | Repo admins                  |
 | CMS sign-in (Cloudflare Worker) | `ldqis-cms-auth`, source in `ldqis/ldqis-cms-auth`; Cloudflare deploys every push to its `main` | Cloudflare account members   |
 | GitHub OAuth App                | Client ID in the Worker's `wrangler.toml`; client secret stored as a Worker secret              | The app's owner              |
-| CMS publisher GitHub App        | Repo variable `CMS_APP_ID`, repo secret `CMS_APP_PRIVATE_KEY`                                   | The app's owner              |
 | `dataqualitylabs.com`           | GoDaddy (registration and DNS); renews every February 12                                        | Dr. Reznik (GoDaddy account) |
 | InteFL experiment stats         | `https://gcis-lrvcs-rl.gccis.rit.edu/public/stats`, served by InteFL's experiment database      | Dmitrii Korobeinikov         |
 
@@ -75,6 +74,15 @@ activity; if the counts stop moving, re-enable it under Actions.
 Labels for datasets, attacks and strategies live in `src/lib/experiment-stats.ts`. A keyword
 it does not know shows as the raw keyword, so a new one never breaks the build; add its label
 there when it appears.
+
+## How CMS edits reach the site
+
+Sveltia runs in `publish_mode: preview` against `main` (`src/admin/config.template.yml`). A
+save commits to a branch `cms/<collection>/<slug>` and opens a draft pull request, so CI runs
+on it like any other PR. **Publish** marks the PR ready and merges it; while the required
+checks are still running it arms GitHub auto-merge instead, and GitHub squash-merges the PR as
+the editor once they pass, which triggers the deploy. This needs "Allow auto-merge" on in the
+repo settings, and no branch named plain `cms` (git cannot hold `cms` and `cms/...` at once).
 
 ## Updating the CMS bundle
 

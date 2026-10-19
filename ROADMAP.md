@@ -38,10 +38,6 @@ These hold across redesigns; changing any is a deliberate decision, not drift.
 
 ### Backlog (unprioritized)
 
-- **Publish CMS edits straight to `main`.** Sveltia v0.248.0 (2026-10-17) ships the upstream
-  fix (sveltia/sveltia-cms#1094): Publish now arms GitHub auto-merge while required checks run.
-  Next: upgrade from 0.233.1, set `publish_mode: preview` on `main`, then retire the `cms`
-  branch, its bridge workflows and the repro repo.
 - **Research areas / themes** — group the lab's work by problem area (data quality,
   integrity, security) on the homepage and a research page, each theme linking its projects,
   publications, and people. research(2026-06): peer lab sites (Stanford AI, Oxford OATML)
@@ -86,6 +82,13 @@ ideas. These were weighed and declined, recorded so they aren't re-proposed:
 ## Shipped
 
 Highlights below; full history in git.
+
+- **2026-10-19: CMS edits publish straight to `main`.** Sveltia 0.248.0 in `publish_mode:
+preview`: each save is a draft pull request, and Publish arms GitHub auto-merge while the
+  required checks run, so the merge lands as the editor and deploys. This retires the `cms`
+  branch and its two bridge workflows (`cms-publish`, `cms-sync`) and the publisher GitHub App
+  they used. research(2026-10): sveltia/sveltia-cms#1094, filed from this site with a minimal
+  reproduction, fixed upstream in 0.248.0.
 
 - **2026-10-18: A CMS form that guides lab members.** The People form opens with name, role
   and photo, asks for years in the lab as two dropdowns (2003 to this year, or Present), checks
