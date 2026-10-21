@@ -4,7 +4,7 @@ The website of RIT's Laboratory of Data Quality and Intelligent Security: an Ast
 
 ## Commands
 
-`make help` lists every target. Run `make setup` in each checkout or worktree, then `make validate` (lint, type check, unit tests, build) before a PR. `make test-e2e` needs a build first. `make dev` and `make preview` are interactive servers. `make lighthouse` runs in CI; on WSL2 it can fail to reach Chrome.
+`make help` lists every target. Run `make setup` in each checkout or worktree, then `make validate` (lint, type check, unit tests, build) before a PR. `make test-e2e` needs a build first, and reuses any server already on port 4321 (another worktree's, or `make dev`), so check the port is free first. `make dev` and `make preview` are interactive servers. `make lighthouse` runs in CI; on WSL2 it can fail to reach Chrome.
 
 ## Rules
 
