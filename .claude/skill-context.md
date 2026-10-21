@@ -7,7 +7,8 @@ tooling changes.
 ## repo
 
 - name: ldqis
-- owner: team — RIT Reznik lab site with outside contributors, not a solo research sister. Public-facing content uses a team-facing voice: no solo conventions ("Why <name>" etymology, sister-ecosystem framing), no internal jargon (M5/M6 milestones, IMPL/ROADMAP) in user-facing pages. This committed line is the durable home for that rule; `kind = "team"` in `~/.claude/techne.toml` is only a roster label the audit doesn't read.
+- owner: team
+- audience: RIT Reznik lab site with outside contributors, not a solo research sister. Public-facing content uses a team-facing voice: no solo conventions ("Why <name>" etymology, sister-ecosystem framing), no internal jargon (M5/M6 milestones, IMPL/ROADMAP) in user-facing pages.
 - package_root: `src/` (Astro pages + layouts + components + styles + content), `public/` (static assets served as-is), `tests/` (unit + e2e)
 - language: TypeScript (Astro 5 + Tailwind 4) — no Python, no Rust
 - cli_entrypoint: `npm run <script>` (see `package.json` `scripts`) wrapped by `make <target>` (see `Makefile`)
