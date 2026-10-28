@@ -296,6 +296,15 @@ collections:
         options:
           - { label: Research project, value: research }
           - { label: Software tool, value: software }
+      - label: Information flyer
+        name: flyer
+        widget: file
+        required: false
+        accept: "application/pdf,.pdf"
+        choose_url: false
+        media_folder: files
+        public_folder: ./files
+        hint: "A PDF shown as an Information Flyer button on the project page. Its link stays the same when you replace the file."
 
   - name: news
     label: News

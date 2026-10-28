@@ -7,6 +7,7 @@ import Nav from "../../components/Nav.astro";
 import PeopleList from "../../components/PeopleList.astro";
 import Subhead from "../../components/Subhead.astro";
 import { summarize } from "../../lib/experiment-stats";
+import { flyerRoute, flyerSize } from "../../lib/project-flyer";
 
 // research(2026-05): Astro's dynamic-route IDs come from filenames via
 // `glob({ pattern })` — no reserved `slug` field anymore. `entry.id` is
@@ -21,7 +22,7 @@ export const getStaticPaths = (async () => {
 }) satisfies GetStaticPaths;
 
 const { entry } = Astro.props;
-const { name, tagline, tags, stack, desc, links, contributors } = entry.data;
+const { name, tagline, tags, stack, desc, links, contributors, flyer } = entry.data;
 
 // `getEntries` resolves each `reference("people")` into the full entry, in
 // the order the IDs were listed in frontmatter. Build hard-fails if any ID
@@ -30,6 +31,10 @@ const contributorEntries = contributors.length ? await getEntries(contributors) 
 const baseUrl = import.meta.env.BASE_URL.replace(/\/$/, "");
 // Projects with a public experiment database (an experimentStats entry under the same id).
 const stats = (await getCollection("experimentStats")).find((s) => s.id === entry.id);
+const flyerLink =
+  flyer && entry.filePath
+    ? { href: `${baseUrl}/${flyerRoute(entry.id)}`, size: flyerSize(entry.filePath, flyer) }
+    : null;
 ---
 
 <BaseLayout
@@ -57,6 +62,37 @@ const stats = (await getCollection("experimentStats")).find((s) => s.id === entr
 
       {stack.length > 0 && (
         <p class="mb-8 text-sm text-text-faint">Built with {stack.join(", ")}</p>
+      )}
+
+      {flyerLink && (
+        <p class="mb-8 flex flex-wrap items-center gap-x-4 gap-y-2">
+          <a
+            href={flyerLink.href}
+            target="_blank"
+            rel="noopener"
+            class="inline-flex items-center gap-2 rounded-full px-[22px] py-[12px] text-sm font-medium transition-transform hover:-translate-y-[1px]"
+            style="background: var(--color-rit-orange); color: #0a0e13;"
+          >
+            <svg
+              class="h-4 w-4 shrink-0"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.8"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              aria-hidden="true"
+            >
+              <path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z" />
+              <path d="M14 3v5h5M9 13h6M9 17h6" />
+            </svg>
+            Information Flyer ↗
+            <span class="sr-only"> (PDF, {flyerLink.size}, opens in a new tab)</span>
+          </a>
+          <span class="text-sm text-text-faint" aria-hidden="true">
+            PDF, {flyerLink.size}
+          </span>
+        </p>
       )}
 
       <div class="flex flex-wrap gap-x-6 gap-y-2 border-t border-line pt-6 text-[15px]">
