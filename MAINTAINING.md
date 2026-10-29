@@ -93,6 +93,11 @@ Two limits of this setup:
 - **Publish right after Save can fail once.** If no check has started yet, Sveltia reports the
   merge as failed instead of waiting. Press Publish again a few seconds later.
 
+A project's **Information flyer** field takes a PDF, stored beside the entry in
+`src/content/projects/files/`. The page links it at `/projects/<id>-flyer.pdf` whatever the file
+is called, so replacing the PDF in the entry keeps the link people already have. The old file
+stays in the folder until someone deletes it in a PR.
+
 ## Updating the CMS bundle
 
 `@sveltia/cms` is an exact-pinned npm dependency, so Dependabot bumps it like any other

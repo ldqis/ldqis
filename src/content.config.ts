@@ -23,6 +23,7 @@ import {
   fetchJson,
   resolveStats,
 } from "./lib/experiment-stats";
+import { FLYER_PATH } from "./lib/project-flyer";
 import statsSnapshot from "./data/intefl-experiments.json";
 
 // Sveltia writes "" for a cleared optional field, which would fail the .url() /
@@ -55,6 +56,9 @@ const projects = defineCollection({
     // research(2026-10): lab sites list software the lab maintains apart from its research
     // projects (Frankfurt CSC labs, Konstanz CL lab), so tools render in their own group.
     kind: z.enum(["research", "software"]).default("research"),
+    // A PDF beside the entry (./files/<name>.pdf), served at /projects/<id>-flyer.pdf
+    // whatever the file is named, so a replacement keeps the shared link.
+    flyer: blankable(z.string().regex(FLYER_PATH, { message: "flyer must be ./files/<name>.pdf" })),
     // research(2026-05): Astro's `reference("people")` validates each
     // string against the people collection's IDs at build time, so a typo
     // hard-fails the build instead of rendering a broken link silently.

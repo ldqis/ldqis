@@ -46,8 +46,9 @@ __pycache__/
 # local verification screenshots (root-level scratch, not site assets)
 /Screenshot *.png
 
-# source PDFs + Windows download tags
+# source PDFs + Windows download tags (project flyers are site files)
 *.pdf
+!src/content/projects/files/*.pdf
 *:Zone.Identifier
 
 # per-session git worktrees

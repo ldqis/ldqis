@@ -8,6 +8,7 @@ links:
   - { label: "GitHub ↗", href: "https://github.com/dmitrykoro/fl-execution-framework" }
   - { label: "IEEE DOI ↗", href: "https://doi.org/10.1109/MIS.2026.3658072" }
 order: 1
+flyer: ./files/intefl-flyer.pdf
 contributors:
   - dmitrii-korobeinikov
   - raman-zatsarenko
