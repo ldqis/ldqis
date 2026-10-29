@@ -5,15 +5,18 @@ longer-term plan lives in [ROADMAP.md](./ROADMAP.md); git history has the full r
 
 ## In progress
 
-**CMS edits publish straight to `main`** (branch `feat/cms-publish-to-main`). Sveltia 0.248.0
-in `publish_mode: preview`, `squash_merges: true`; the `cms-publish`/`cms-sync` bridge is gone.
-Right after the deploy lands, re-check then delete the `cms` branch (a `cms` ref blocks
-Sveltia's `cms/...` branches): `git diff --quiet origin/main origin/cms`, no open `cms-pub`
-PR, no CMS publish run in progress, because a tab still holding the old config (cached up to
-10 minutes) can write to `cms`. Then remove the repo secret `CMS_APP_PRIVATE_KEY` and variable
-`CMS_APP_ID`, and archive the repro repo `ajbarea/sveltia-github-publish-repro`. An org owner
-uninstalls the `ldqis-cms-publisher` app. The first real CMS edit after the switch should be
-watched: Publish while Build runs, then auto-merge on, squash merge as the editor, deploy runs.
+**DQ Lab meeting asks of Fri 10-23** (wanted before Fri 10-30):
+
+- #205 Information Flyer button on InteFL (PR #207, merged 10-28): PDF in `src/content/projects/files/`,
+  served at `/projects/<id>-flyer.pdf`; CMS field "Information flyer".
+- #204 live badge and latest-run card (PR #208): the browser checks InteFL's public endpoint;
+  Live only while its data is under 15 minutes old. `data/<id>-latest.json` beside the full data.
+- #206 publication import: research only. The recommendation (OpenAlex by ORCID iD, one review
+  PR per run, a person approves every entry) is on the issue; build nothing until AJ answers its
+  six questions.
+
+The latest-run card shows date, dataset and strategy because that is all the public endpoint
+serves for the latest run; attack and accuracy need Dima to add them to `latest_experiment`.
 
 Local CMS testing without a GitHub sign-in: copy `src/content` to `public/__seed/` (never
 commit it), write it into the browser's private file storage with an empty `.git` folder,
@@ -34,12 +37,17 @@ override `window.showDirectoryPicker` to return `navigator.storage.getDirectory(
 
 ## Next up
 
-1. **RSS 2026 talk video.** When the Rochester Security Summit uploads the recording, add a
+1. **CMS follow-ups.** An org owner uninstalls the `ldqis-cms-publisher` app, and the first real
+   CMS edit is watched end to end: Publish while Build runs, auto-merge on, squash merge as the
+   editor, deploy runs.
+2. **InteFL page layout shift.** At 390 wide it shifts 0.067 shortly after load (on main before
+   #208 too); `layout-stability.spec.ts` measures only the first project page.
+3. **RSS 2026 talk video.** When the Rochester Security Summit uploads the recording, add a
    "Watch the talk" link to `src/content/news/2026-10-rochester-security-summit.md`.
-2. **Codecov for the org,** then update the README badge token.
-3. **Install GitGuardian on the org.**
-4. **Retire the old server.** The previous site still answers at `129.21.34.220`
+4. **Codecov for the org,** then update the README badge token.
+5. **Install GitGuardian on the org.**
+6. **Retire the old server.** The previous site still answers at `129.21.34.220`
    (`vhost11.cs.rit.edu`); RIT CS IT has to take it down.
-5. **Backfill team cross-links.** Projects and publications link to their lab-member
+7. **Backfill team cross-links.** Projects and publications link to their lab-member
    authors and contributors through the `people` collection; add the remaining lists as
    authorship is confirmed.

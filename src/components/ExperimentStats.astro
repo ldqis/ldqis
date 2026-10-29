@@ -9,15 +9,29 @@
 // list whose text carries the number, the pattern accessible-chart guidance recommends
 // over ARIA-annotated SVG. Sources: datadoghq.com/blog/timeseries-metric-graphs-101,
 // sarasoueidan.com/blog/accessible-data-charts-for-khan-academy-2018-annual-report
-import { toDate, type StatsView } from "../lib/experiment-stats";
+//
+// research(2026-10): the status badge, the headline counts and the latest run are checked
+// against the live endpoint in the browser, as Dima's own InteFL page does (korobeinikov.net),
+// because a static build cannot tell "nothing new" from "the refresh stopped". The badge says
+// Live only while the source's payload is under LIVE_WINDOW_MS old; otherwise it shows when
+// the data is from, and the chart and breakdowns carry their own "as of" time. Times are
+// absolute, so nothing ticks, and the page never polls (WCAG 2.2.2): Live lapses on a timer
+// and the next check waits for the visitor to return to the tab. The pulse stops after two
+// cycles and never runs under reduced motion; the badge is outside any live region.
+// Sources: w3.org/WAI/WCAG22/Understanding/pause-stop-hide, w3.org/WAI/WCAG22/Techniques/aria/ARIA22
+import { formatLabTime } from "../lib/experiment-format";
+import type { StatsView } from "../lib/experiment-stats";
 import Subhead from "./Subhead.astro";
 
 interface Props {
   view: StatsView;
   dataHref: string;
+  // The detail endpoint for the latest run, and the live source the browser checks.
+  latestHref: string;
+  liveEndpoint: string;
 }
 
-const { view, dataHref } = Astro.props;
+const { view, dataHref, latestHref, liveEndpoint } = Astro.props;
 const fmt = (n: number) => n.toLocaleString("en-US");
 const plural = (n: number) => `${fmt(n)} experiment${n === 1 ? "" : "s"}`;
 const weekMax = Math.max(1, ...view.weeks.map((w) => w.count));
@@ -25,15 +39,7 @@ const peakIndex = view.peak ? view.weeks.indexOf(view.peak) : -1;
 const peakText = view.peak
   ? `Busiest week: ${view.peak.label}, ${plural(view.peak.count)}`
   : "No experiments recorded yet";
-const updated = new Intl.DateTimeFormat("en-US", {
-  month: "short",
-  day: "numeric",
-  year: "numeric",
-  hour: "numeric",
-  minute: "2-digit",
-  timeZone: "America/New_York",
-  timeZoneName: "short",
-}).format(toDate(view.generatedAt));
+const updated = formatLabTime(view.generatedAt);
 const hasAlpha = view.datasets.some((g) => g.rows.some((r) => r.detail?.includes("α")));
 const panels = [
   { id: "attacks", title: "Attacks tested", groups: view.attacks, max: view.attackMax },
@@ -46,19 +52,61 @@ const panels = [
   class="mt-14 border-t border-line pt-10"
   aria-labelledby="experiments-heading"
 >
-  <Subhead id="experiments-heading" class="mb-6">
-    Experiments
-  </Subhead>
+  <div class="mb-6 flex flex-wrap items-center justify-between gap-x-6 gap-y-3">
+    <Subhead id="experiments-heading">Experiments</Subhead>
+    <p
+      class="status"
+      data-status
+      data-state="built"
+      data-endpoint={liveEndpoint}
+      data-generated={view.generatedAt}
+    >
+      <span class="dot" aria-hidden="true"></span>
+      <span data-status-text>
+        Updated <time datetime={view.generatedAt}>{updated}</time>
+      </span>
+    </p>
+  </div>
 
   <p class="lede">
-    {plural(view.total)}
-    {view.since && ` since ${view.since}`}. {fmt(view.successful)} ran to completion, using{" "}
-    {fmt(Math.round(view.hours))} hours of compute.
+    <span data-live="total">{plural(view.total)}</span>
+    {view.since && ` since ${view.since}`}.{" "}
+    <span data-live="successful">{fmt(view.successful)}</span> ran to completion, using{" "}
+    <span data-live="hours">{fmt(Math.round(view.hours))}</span> hours of compute.
   </p>
+
   {view.latest && (
-    <p class="mt-3 text-text-dim">
-      Latest run: {view.latest.strategy} on {view.latest.dataset}, {view.latest.day}.
-    </p>
+    <section
+      data-latest-card
+      class="latest mt-8 rounded-xl border border-line bg-bg-elev px-5 py-4"
+      aria-labelledby="latest-heading"
+    >
+      <h3 id="latest-heading" class="text-[15px] font-medium text-text">
+        Latest run
+      </h3>
+      <dl class="mt-3 grid grid-cols-1 gap-x-8 gap-y-3 sm:grid-cols-3">
+        <div>
+          <dt class="text-[13px] text-text-faint">Started</dt>
+          <dd class="text-[15px] text-text">
+            <time data-live="started" datetime={view.latest.createdAt}>
+              {view.latest.time}
+            </time>
+          </dd>
+        </div>
+        <div>
+          <dt class="text-[13px] text-text-faint">Dataset</dt>
+          <dd class="text-[15px] text-text" data-live="dataset">
+            {view.latest.dataset}
+          </dd>
+        </div>
+        <div>
+          <dt class="text-[13px] text-text-faint">Aggregation strategy</dt>
+          <dd class="text-[15px] text-text" data-live="strategy">
+            {view.latest.strategy}
+          </dd>
+        </div>
+      </dl>
+    </section>
   )}
 
   {view.weeks.length > 0 && (
@@ -185,14 +233,69 @@ const panels = [
   </div>
 
   <p class="mt-12 text-[13px] text-text-faint">
-    From InteFL's experiment database, checked every hour. Last updated {updated}.{" "}
+    Chart and breakdowns from InteFL's experiment database as of {updated}.{" "}
     <a href={dataHref} class="underline hover:text-rit-orange-text">
       Get the data as JSON
     </a>
+    {view.latest ? (
+      <>
+        , or{" "}
+        <a href={latestHref} class="underline hover:text-rit-orange-text">
+          the latest run
+        </a>
+        .
+      </>
+    ) : (
+      "."
+    )}
   </p>
 </section>
 
 <style>
+  .status {
+    --dot: var(--color-text-faint);
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 14px;
+    color: var(--color-text-dim);
+    font-variant-numeric: tabular-nums;
+  }
+  .status[data-state="live"] {
+    --dot: #15803d;
+  }
+  .status[data-state="stale"] {
+    --dot: #b45309;
+  }
+  :global([data-theme="dark"]) .status[data-state="live"] {
+    --dot: #22c55e;
+  }
+  :global([data-theme="dark"]) .status[data-state="stale"] {
+    --dot: #f59e0b;
+  }
+  .dot {
+    width: 8px;
+    height: 8px;
+    flex: none;
+    border-radius: 50%;
+    background: var(--dot);
+  }
+  /* Two pulses when the badge turns live, then still: well inside WCAG 2.2.2's five seconds. */
+  @media (prefers-reduced-motion: no-preference) {
+    .status[data-state="live"] .dot {
+      animation: pulse 2s ease-out 2;
+    }
+  }
+  @keyframes pulse {
+    from {
+      box-shadow: 0 0 0 0 color-mix(in oklab, var(--dot) 55%, transparent);
+    }
+    70%,
+    to {
+      box-shadow: 0 0 0 7px color-mix(in oklab, var(--dot) 0%, transparent);
+    }
+  }
+
   .lede {
     font-family: var(--font-display);
     font-size: clamp(28px, 4.2vw, 40px);
@@ -351,6 +454,97 @@ const panels = [
 </style>
 
 <script>
+  import {
+    LIVE_WINDOW_MS,
+    datasetLabel,
+    formatLabClock,
+    formatLabTime,
+    freshness,
+    readLiveStats,
+    strategyLabel,
+    toDate,
+  } from "../lib/experiment-format";
+
+  // Check the live source and, when it answers with data newer than the build, show its
+  // headline counts and latest run. Live lapses when the data passes LIVE_WINDOW_MS; the
+  // next check runs when the visitor comes back to the tab.
+  for (const status of document.querySelectorAll<HTMLElement>("[data-status]")) {
+    const section = status.closest("section");
+    const text = status.querySelector<HTMLElement>("[data-status-text]");
+    const card = section?.querySelector<HTMLElement>("[data-latest-card]");
+    const endpoint = status.dataset.endpoint;
+    const built = toDate(status.dataset.generated ?? "").getTime();
+    if (!section || !text || !endpoint) continue;
+    const fmt = (n: number) => n.toLocaleString("en-US");
+    const set = (key: string, value: string, datetime?: string) => {
+      const el = section.querySelector<HTMLElement>(`[data-live="${key}"]`);
+      if (!el) return;
+      el.textContent = value;
+      if (datetime) el.setAttribute("datetime", datetime);
+    };
+    const stamp = (iso: string, label: string) => {
+      const time = document.createElement("time");
+      time.dateTime = iso;
+      time.textContent = label;
+      return time;
+    };
+    let checkedAt = 0;
+    let shown: string | undefined;
+    let lapse: ReturnType<typeof setTimeout> | undefined;
+
+    const show = (generatedAt: string) => {
+      shown = generatedAt;
+      clearTimeout(lapse);
+      const state = freshness(generatedAt, Date.now());
+      status.dataset.state = state;
+      if (state === "live") {
+        text.replaceChildren("Live · updated ", stamp(generatedAt, formatLabClock(generatedAt)));
+        const left = toDate(generatedAt).getTime() + LIVE_WINDOW_MS - Date.now();
+        lapse = setTimeout(() => show(generatedAt), Math.max(0, left) + 1000);
+      } else {
+        const label = formatLabTime(generatedAt);
+        text.replaceChildren(
+          state === "stale" ? "Data from " : "Updated ",
+          stamp(generatedAt, label),
+        );
+      }
+    };
+
+    const check = async () => {
+      checkedAt = Date.now();
+      try {
+        const res = await fetch(endpoint, { signal: AbortSignal.timeout(8000) });
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const live = readLiveStats(await res.json());
+        if (!live || toDate(live.generatedAt).getTime() < built) throw new Error("no newer data");
+        show(live.generatedAt);
+        set("total", `${fmt(live.total)} experiment${live.total === 1 ? "" : "s"}`);
+        set("successful", fmt(live.successful));
+        set("hours", fmt(Math.round(live.hours)));
+        if (card) card.hidden = !live.latest;
+        if (live.latest) {
+          set("started", formatLabTime(live.latest.createdAt), live.latest.createdAt);
+          set("dataset", datasetLabel(live.latest.dataset));
+          set("strategy", strategyLabel(live.latest.strategy));
+        }
+      } catch {
+        // Unreachable, invalid or older than the build: the page keeps what it last showed.
+      }
+    };
+
+    // The lapse timer can sleep with the machine or the back/forward cache, so every return
+    // first judges the shown data against the clock, then checks again if a minute has passed.
+    const recheck = () => {
+      if (document.visibilityState !== "visible") return;
+      if (shown) show(shown);
+      if (Date.now() - checkedAt > 60_000) void check();
+    };
+    void check();
+    document.addEventListener("visibilitychange", recheck);
+    window.addEventListener("focus", recheck);
+    window.addEventListener("pageshow", (e) => e.persisted && recheck());
+  }
+
   // Read the weekly chart by pointer (hover, or drag on touch) and by keyboard (arrow keys,
   // Home, End, Escape). The readout shows the week under the pointer or selection and
   // falls back to the busiest week.
