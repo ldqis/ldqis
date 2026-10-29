@@ -112,21 +112,28 @@ export const formatLabTime = (iso: string) =>
     timeZoneName: "short",
   }).format(toDate(iso));
 
-const relative = new Intl.RelativeTimeFormat("en-US", { numeric: "always" });
-
-/** "just now", "4 minutes ago", "3 hours ago", "2 days ago". A future time reads "just now". */
-export function timeAgo(iso: string, now: number): string {
-  const minutes = Math.floor((now - toDate(iso).getTime()) / 60_000);
-  if (!(minutes >= 1)) return "just now";
-  if (minutes < 60) return relative.format(-minutes, "minute");
-  const hours = Math.floor(minutes / 60);
-  if (hours < 48) return relative.format(-hours, "hour");
-  return relative.format(-Math.floor(hours / 24), "day");
-}
+/** "9:07 PM EDT": the time of day in the lab's time zone. */
+export const formatLabClock = (iso: string) =>
+  new Intl.DateTimeFormat("en-US", {
+    hour: "numeric",
+    minute: "2-digit",
+    timeZone: "America/New_York",
+    timeZoneName: "short",
+  }).format(toDate(iso));
 
 // The source regenerates its payload at least every minute; one older than this means the
 // database behind it has stopped answering, so the page no longer calls it live.
 export const LIVE_WINDOW_MS = 15 * 60_000;
+// A payload stamped further ahead of the visitor's clock than this means that clock is wrong,
+// so its age cannot be judged.
+export const CLOCK_SKEW_MS = 5 * 60_000;
+
+/** Whether data generated at `generatedAt` is live, stale or of unknown age at `now`. */
+export function freshness(generatedAt: string, now: number): "live" | "stale" | "unknown" {
+  const age = now - toDate(generatedAt).getTime();
+  if (age < -CLOCK_SKEW_MS) return "unknown";
+  return age <= LIVE_WINDOW_MS ? "live" : "stale";
+}
 
 export type LiveStats = {
   total: number;

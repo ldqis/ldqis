@@ -3,6 +3,7 @@
 // The source is mocked and the browser clock fixed relative to the build, so every state is
 // reproducible.
 import { expect, test, type Page } from "@playwright/test";
+import { formatLabClock, formatLabTime } from "../../src/lib/experiment-format";
 import { STATS_ENDPOINT } from "../../src/lib/experiment-stats";
 
 const MIN = 60_000;
@@ -18,7 +19,7 @@ async function open(
   reply: ((base: Record<string, unknown>) => unknown) | "fail",
 ) {
   const base = await built(page);
-  await page.clock.setFixedTime(at);
+  await page.clock.install({ time: at });
   await page.route(STATS_ENDPOINT, (route) =>
     reply === "fail"
       ? route.abort()
@@ -46,7 +47,10 @@ test.describe("InteFL live check", () => {
       generated_at: new Date(t + 2 * MIN).toISOString(),
     }));
     await expect(status).toHaveAttribute("data-state", "live");
-    await expect(status).toHaveText(/^\s*Live · checked 1 minute ago\s*$/);
+    const stamp = new Date(t + 2 * MIN).toISOString();
+    await expect(status).toHaveText(
+      new RegExp(`^\\s*Live · updated ${formatLabClock(stamp)}\\s*$`),
+    );
     const section = page.locator("#experiments");
     await expect(section.locator('[data-live="total"]')).toHaveText("9,001 experiments");
     await expect(section.locator('[data-live="successful"]')).toHaveText("8,000");
@@ -61,12 +65,48 @@ test.describe("InteFL live check", () => {
     );
   });
 
-  test("an old answer says when it was last checked, not Live", async ({ page }) => {
+  test("an old answer says when its data is from, not Live", async ({ page }) => {
     const base = await built(page);
     const t = new Date(base.generated_at).getTime();
     const status = await open(page, t + 3 * 60 * MIN, (b) => b);
     await expect(status).toHaveAttribute("data-state", "stale");
-    await expect(status).toHaveText(/^\s*Last checked 3 hours ago\s*$/);
+    await expect(status).toHaveText(
+      new RegExp(`^\\s*Data from ${formatLabTime(base.generated_at)}\\s*$`),
+    );
+  });
+
+  test("Live lapses on an open tab once the data passes fifteen minutes", async ({ page }) => {
+    const base = await built(page);
+    const t = new Date(base.generated_at).getTime();
+    const status = await open(page, t + MIN, (b) => b);
+    await expect(status).toHaveAttribute("data-state", "live");
+    await page.clock.runFor(15 * MIN);
+    await expect(status).toHaveAttribute("data-state", "stale");
+    await expect(status).toHaveText(/^\s*Data from /);
+  });
+
+  test("a visitor clock far behind the source never reads Live", async ({ page }) => {
+    const base = await built(page);
+    const t = new Date(base.generated_at).getTime();
+    const status = await open(page, t - 4 * 60 * MIN, (b) => b);
+    await expect(status).toHaveAttribute("data-state", "unknown");
+    await expect(status).toHaveText(
+      new RegExp(`^\\s*Updated ${formatLabTime(base.generated_at)}\\s*$`),
+    );
+  });
+
+  test("a live answer with no runs hides the latest-run card", async ({ page }) => {
+    const base = await built(page);
+    const t = new Date(base.generated_at).getTime();
+    const status = await open(page, t + MIN, (b) => ({
+      ...b,
+      total_experiments: 0,
+      successful_experiments: 0,
+      total_hours: 0,
+      latest_experiment: null,
+    }));
+    await expect(status).toHaveAttribute("data-state", "live");
+    await expect(page.getByRole("region", { name: "Latest run" })).toBeHidden();
   });
 
   test("an unreachable source leaves the build's time and counts", async ({ page }) => {

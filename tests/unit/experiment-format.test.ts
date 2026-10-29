@@ -1,28 +1,39 @@
 import { describe, expect, it } from "vitest";
 import {
+  CLOCK_SKEW_MS,
   LIVE_WINDOW_MS,
+  formatLabClock,
   formatLabTime,
+  freshness,
   readLiveStats,
-  timeAgo,
 } from "../../src/lib/experiment-format";
 
 const at = (iso: string) => new Date(iso).getTime();
 
-describe("timeAgo", () => {
+describe("freshness", () => {
   const t = "2026-10-28T23:00:00Z";
   it.each([
-    [t, "just now"],
-    ["2026-10-28T23:00:59Z", "just now"],
-    ["2026-10-28T23:01:00Z", "1 minute ago"],
-    ["2026-10-28T23:59:59Z", "59 minutes ago"],
-    ["2026-10-29T00:00:00Z", "1 hour ago"],
-    ["2026-10-30T22:59:00Z", "47 hours ago"],
-    ["2026-10-30T23:00:00Z", "2 days ago"],
-    ["2026-10-28T22:00:00Z", "just now"], // a clock behind the source
-  ])("%s → %s", (now, text) => expect(timeAgo(t, at(now))).toBe(text));
+    ["2026-10-28T23:00:00Z", "live"],
+    ["2026-10-28T23:15:00Z", "live"],
+    ["2026-10-28T23:15:01Z", "stale"],
+    ["2026-10-29T02:00:00Z", "stale"],
+    ["2026-10-28T22:55:00Z", "live"], // a visitor clock up to five minutes behind
+    ["2026-10-28T22:54:59Z", "unknown"], // further behind: the age cannot be judged
+    ["2026-10-28T19:00:00Z", "unknown"],
+  ])("at %s → %s", (now, state) => expect(freshness(t, at(now))).toBe(state));
 
   it("reads a timestamp without an offset as UTC", () =>
-    expect(timeAgo("2026-10-28T23:00:00", at("2026-10-28T23:05:00Z"))).toBe("5 minutes ago"));
+    expect(freshness("2026-10-28T23:00:00", at("2026-10-28T23:20:00Z"))).toBe("stale"));
+
+  it("uses a fifteen-minute window and five minutes of clock tolerance", () => {
+    expect(LIVE_WINDOW_MS).toBe(900_000);
+    expect(CLOCK_SKEW_MS).toBe(300_000);
+  });
+});
+
+describe("formatLabClock", () => {
+  it("shows the lab's local time of day and zone", () =>
+    expect(formatLabClock("2026-10-24T01:07:55Z")).toBe("9:07 PM EDT"));
 });
 
 describe("formatLabTime", () => {
@@ -68,6 +79,4 @@ describe("readLiveStats", () => {
     ["a bad timestamp", { ...payload, generated_at: "yesterday" }],
     ["a malformed latest run", { ...payload, latest_experiment: { dataset: 3 } }],
   ])("rejects %s", (_, json) => expect(readLiveStats(json)).toBeNull());
-
-  it("calls a payload live for fifteen minutes", () => expect(LIVE_WINDOW_MS).toBe(900_000));
 });

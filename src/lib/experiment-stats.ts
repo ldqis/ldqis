@@ -9,7 +9,7 @@ import {
   parseDataset,
   strategyLabel,
   toDate,
-} from "./experiment-format";
+} from "./experiment-format.ts";
 
 export { datasetLabel, parseDataset, strategyLabel, toDate };
 

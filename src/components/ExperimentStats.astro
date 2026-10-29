@@ -13,10 +13,11 @@
 // research(2026-10): the status badge, the headline counts and the latest run are checked
 // against the live endpoint in the browser, as Dima's own InteFL page does (korobeinikov.net),
 // because a static build cannot tell "nothing new" from "the refresh stopped". The badge says
-// Live only when the source answered with a payload under LIVE_WINDOW_MS old; otherwise it
-// shows the build's own time, and the chart and breakdowns carry their own "as of" time.
-// The pulse stops after two cycles (WCAG 2.2.2) and not at all under reduced motion, and the
-// ticking text sits outside any live region so screen readers are not interrupted.
+// Live only while the source's payload is under LIVE_WINDOW_MS old; otherwise it shows when
+// the data is from, and the chart and breakdowns carry their own "as of" time. Times are
+// absolute, so nothing ticks, and the page never polls (WCAG 2.2.2): Live lapses on a timer
+// and the next check waits for the visitor to return to the tab. The pulse stops after two
+// cycles and never runs under reduced motion; the badge is outside any live region.
 // Sources: w3.org/WAI/WCAG22/Understanding/pause-stop-hide, w3.org/WAI/WCAG22/Techniques/aria/ARIA22
 import { formatLabTime } from "../lib/experiment-format";
 import type { StatsView } from "../lib/experiment-stats";
@@ -76,20 +77,13 @@ const panels = [
 
   {view.latest && (
     <section
+      data-latest-card
       class="latest mt-8 rounded-xl border border-line bg-bg-elev px-5 py-4"
       aria-labelledby="latest-heading"
     >
-      <div class="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
-        <h3 id="latest-heading" class="text-[15px] font-medium text-text">
-          Latest run
-        </h3>
-        <a
-          href={latestHref}
-          class="text-[13px] text-text-faint underline hover:text-rit-orange-text"
-        >
-          Latest run as JSON
-        </a>
-      </div>
+      <h3 id="latest-heading" class="text-[15px] font-medium text-text">
+        Latest run
+      </h3>
       <dl class="mt-3 grid grid-cols-1 gap-x-8 gap-y-3 sm:grid-cols-3">
         <div>
           <dt class="text-[13px] text-text-faint">Started</dt>
@@ -243,6 +237,11 @@ const panels = [
     <a href={dataHref} class="underline hover:text-rit-orange-text">
       Get the data as JSON
     </a>
+    , or{" "}
+    <a href={latestHref} class="underline hover:text-rit-orange-text">
+      the latest run
+    </a>
+    .
   </p>
 </section>
 
@@ -452,19 +451,21 @@ const panels = [
   import {
     LIVE_WINDOW_MS,
     datasetLabel,
+    formatLabClock,
     formatLabTime,
+    freshness,
     readLiveStats,
     strategyLabel,
-    timeAgo,
     toDate,
   } from "../lib/experiment-format";
 
-  // Check the live source and, when it answers, show its headline counts and latest run.
-  // Checks again when the tab returns after five minutes away, so an open tab does not keep
-  // claiming a check it made an hour ago.
+  // Check the live source and, when it answers with data newer than the build, show its
+  // headline counts and latest run. Live lapses when the data passes LIVE_WINDOW_MS; the
+  // next check runs when the visitor comes back to the tab.
   for (const status of document.querySelectorAll<HTMLElement>("[data-status]")) {
     const section = status.closest("section");
     const text = status.querySelector<HTMLElement>("[data-status-text]");
+    const card = section?.querySelector<HTMLElement>("[data-latest-card]");
     const endpoint = status.dataset.endpoint;
     const built = toDate(status.dataset.generated ?? "").getTime();
     if (!section || !text || !endpoint) continue;
@@ -475,7 +476,31 @@ const panels = [
       el.textContent = value;
       if (datetime) el.setAttribute("datetime", datetime);
     };
+    const stamp = (iso: string, label: string) => {
+      const time = document.createElement("time");
+      time.dateTime = iso;
+      time.textContent = label;
+      return time;
+    };
     let checkedAt = 0;
+    let lapse: ReturnType<typeof setTimeout> | undefined;
+
+    const show = (generatedAt: string) => {
+      clearTimeout(lapse);
+      const state = freshness(generatedAt, Date.now());
+      status.dataset.state = state;
+      if (state === "live") {
+        text.replaceChildren("Live · updated ", stamp(generatedAt, formatLabClock(generatedAt)));
+        const left = toDate(generatedAt).getTime() + LIVE_WINDOW_MS - Date.now();
+        lapse = setTimeout(() => show(generatedAt), Math.max(0, left) + 1000);
+      } else {
+        const label = formatLabTime(generatedAt);
+        text.replaceChildren(
+          state === "stale" ? "Data from " : "Updated ",
+          stamp(generatedAt, label),
+        );
+      }
+    };
 
     const check = async () => {
       checkedAt = Date.now();
@@ -484,33 +509,27 @@ const panels = [
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         const live = readLiveStats(await res.json());
         if (!live || toDate(live.generatedAt).getTime() < built) throw new Error("no newer data");
-        const now = Date.now();
-        const fresh = now - toDate(live.generatedAt).getTime() <= LIVE_WINDOW_MS;
-        const time = document.createElement("time");
-        time.dateTime = live.generatedAt;
-        time.title = formatLabTime(live.generatedAt);
-        time.textContent = timeAgo(live.generatedAt, now);
-        text.replaceChildren(fresh ? "Live · checked " : "Last checked ", time);
-        status.dataset.state = fresh ? "live" : "stale";
-
+        show(live.generatedAt);
         set("total", `${fmt(live.total)} experiment${live.total === 1 ? "" : "s"}`);
         set("successful", fmt(live.successful));
         set("hours", fmt(Math.round(live.hours)));
+        if (card) card.hidden = !live.latest;
         if (live.latest) {
           set("started", formatLabTime(live.latest.createdAt), live.latest.createdAt);
           set("dataset", datasetLabel(live.latest.dataset));
           set("strategy", strategyLabel(live.latest.strategy));
         }
       } catch {
-        // Unreachable, invalid or older than the build: the page keeps what it was built with.
+        // Unreachable, invalid or older than the build: the page keeps what it last showed.
       }
     };
 
+    const recheck = () => {
+      if (document.visibilityState === "visible" && Date.now() - checkedAt > 60_000) void check();
+    };
     void check();
-    document.addEventListener("visibilitychange", () => {
-      if (document.visibilityState === "visible" && Date.now() - checkedAt > 5 * 60_000)
-        void check();
-    });
+    document.addEventListener("visibilitychange", recheck);
+    window.addEventListener("focus", recheck);
   }
 
   // Read the weekly chart by pointer (hover, or drag on touch) and by keyboard (arrow keys,
