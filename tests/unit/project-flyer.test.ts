@@ -15,10 +15,17 @@ describe("formatFileSize", () => {
 });
 
 describe("FLYER_PATH", () => {
-  it.each(["./files/intefl-flyer.pdf", "files/intefl-flyer.pdf", "./files/InteFL_Pitch-2.PDF"])(
-    "accepts %s",
-    (path) => expect(FLYER_PATH.test(path)).toBe(true),
-  );
+  // The last four are names the CMS writes for "Résumé du projet.pdf", "Флаер InteFL.pdf",
+  // "flyer–final.pdf" and "_draft.pdf".
+  it.each([
+    "./files/intefl-flyer.pdf",
+    "files/intefl-flyer.pdf",
+    "./files/InteFL_Pitch-2.PDF",
+    "./files/résumé-du-projet.pdf",
+    "./files/флаер-intefl.pdf",
+    "./files/flyer–final.pdf",
+    "./files/_draft.pdf",
+  ])("accepts %s", (path) => expect(FLYER_PATH.test(path)).toBe(true));
 
   it.each([
     "./files/../../../package.json",
@@ -27,6 +34,9 @@ describe("FLYER_PATH", () => {
     "/files/flyer.pdf",
     "./files/flyer.pdf.exe",
     "./files/.pdf",
+    "./files/.hidden.pdf",
+    "./files/..\\secret.pdf",
+    "./files/a\\..\\..\\b.pdf",
     "https://example.com/flyer.pdf",
   ])("rejects %s", (path) => expect(FLYER_PATH.test(path)).toBe(false));
 });
@@ -35,6 +45,12 @@ describe("flyer locations", () => {
   it("resolves the file beside the entry", () => {
     expect(flyerFile("src/content/projects/intefl.md", "./files/intefl-flyer.pdf")).toMatch(
       /src\/content\/projects\/files\/intefl-flyer\.pdf$/,
+    );
+  });
+
+  it("names the entry and the path when the file is missing", () => {
+    expect(() => flyerFile("src/content/projects/intefl.md", "./files/missing.pdf")).toThrow(
+      "src/content/projects/intefl.md: flyer ./files/missing.pdf not found",
     );
   });
 
