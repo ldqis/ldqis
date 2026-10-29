@@ -1,0 +1,6 @@
+# The intake scripts under scripts/: ruff's default errors plus the logging rules (techne's
+# logging standard).
+line-length = 100
+
+[lint]
+select = ["E4", "E7", "E9", "F", "G", "LOG"]

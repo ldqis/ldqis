@@ -80,6 +80,9 @@ jobs:
       - run: npm run format:check
       - run: node scripts/check-readme-claims.mjs
         name: README claim drift
+      # The intake scripts: pyflakes errors and the logging rules (ruff.toml).
+      - run: pipx run ruff==0.17.3 check --output-format=github
+        name: Python lint (ruff)
 
   type-check:
     name: Type check

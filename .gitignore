@@ -57,3 +57,4 @@ __pycache__/
 # WSL Lighthouse profile dirs (literal Windows paths)
 /C:*
 lighthouse.*/
+*.log
