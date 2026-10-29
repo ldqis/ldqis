@@ -6,7 +6,7 @@ import ExperimentStats from "../../components/ExperimentStats.astro";
 import Nav from "../../components/Nav.astro";
 import PeopleList from "../../components/PeopleList.astro";
 import Subhead from "../../components/Subhead.astro";
-import { summarize } from "../../lib/experiment-stats";
+import { STATS_ENDPOINT, summarize } from "../../lib/experiment-stats";
 import { flyerRoute, flyerSize } from "../../lib/project-flyer";
 
 // research(2026-05): Astro's dynamic-route IDs come from filenames via
@@ -112,6 +112,8 @@ const flyerLink =
         <ExperimentStats
           view={summarize(stats.data)}
           dataHref={`${baseUrl}/data/${entry.id}-experiments.json`}
+          latestHref={`${baseUrl}/data/${entry.id}-latest.json`}
+          liveEndpoint={STATS_ENDPOINT}
         />
       )}
 
