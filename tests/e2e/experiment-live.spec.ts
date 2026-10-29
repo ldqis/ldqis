@@ -98,6 +98,20 @@ test.describe("InteFL live check", () => {
     await expect(status).toHaveText(/^\s*Data from /);
   });
 
+  test("Live ends on a back/forward-cache restore after a sleep", async ({ page }) => {
+    const base = await built(page);
+    const t = new Date(base.generated_at).getTime();
+    const status = await open(page, t + MIN, (b) => b);
+    await expect(status).toHaveAttribute("data-state", "live");
+    await page.unrouteAll();
+    await page.route(STATS_ENDPOINT, (route) => route.abort());
+    await page.clock.setSystemTime(t + 3 * 60 * MIN);
+    await page.evaluate(() =>
+      window.dispatchEvent(new PageTransitionEvent("pageshow", { persisted: true })),
+    );
+    await expect(status).toHaveAttribute("data-state", "stale");
+  });
+
   test("a visitor clock far behind the source never reads Live", async ({ page }) => {
     const base = await built(page);
     const t = new Date(base.generated_at).getTime();
