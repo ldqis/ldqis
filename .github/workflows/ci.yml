@@ -156,8 +156,14 @@ jobs:
           node-version-file: ".nvmrc"
           cache: npm
       - run: npm ci
+      # A stalled apt mirror can hang --with-deps until the job timeout; cap each try and retry.
       - name: Install Playwright browsers
-        run: npx playwright install --with-deps chromium
+        run: |
+          for attempt in 1 2 3; do
+            timeout 180 npx playwright install --with-deps chromium && exit 0
+            echo "::warning::playwright install attempt $attempt failed or timed out"
+          done
+          exit 1
       - name: Build site
         run: npm run build
       - name: Run Playwright tests
