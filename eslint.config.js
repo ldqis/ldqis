@@ -37,6 +37,10 @@ export default defineConfig([
     },
   },
   {
+    // The site logs warnings and errors only; console.log and friends never ship to a browser.
+    rules: { "no-console": ["error", { allow: ["warn", "error"] }] },
+  },
+  {
     // Node globals for config files + build-time scripts that run under Node.
     files: [
       "*.config.{js,ts,mjs,cjs}",
@@ -53,5 +57,7 @@ export default defineConfig([
         __filename: "readonly",
       },
     },
+    // These print their results to stdout.
+    rules: { "no-console": "off" },
   },
 ]);
