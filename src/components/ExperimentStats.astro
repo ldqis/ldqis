@@ -237,11 +237,17 @@ const panels = [
     <a href={dataHref} class="underline hover:text-rit-orange-text">
       Get the data as JSON
     </a>
-    , or{" "}
-    <a href={latestHref} class="underline hover:text-rit-orange-text">
-      the latest run
-    </a>
-    .
+    {view.latest ? (
+      <>
+        , or{" "}
+        <a href={latestHref} class="underline hover:text-rit-orange-text">
+          the latest run
+        </a>
+        .
+      </>
+    ) : (
+      "."
+    )}
   </p>
 </section>
 
@@ -483,9 +489,11 @@ const panels = [
       return time;
     };
     let checkedAt = 0;
+    let shown: string | undefined;
     let lapse: ReturnType<typeof setTimeout> | undefined;
 
     const show = (generatedAt: string) => {
+      shown = generatedAt;
       clearTimeout(lapse);
       const state = freshness(generatedAt, Date.now());
       status.dataset.state = state;
@@ -524,12 +532,17 @@ const panels = [
       }
     };
 
+    // The lapse timer can sleep with the machine or the back/forward cache, so every return
+    // first judges the shown data against the clock, then checks again if a minute has passed.
     const recheck = () => {
-      if (document.visibilityState === "visible" && Date.now() - checkedAt > 60_000) void check();
+      if (document.visibilityState !== "visible") return;
+      if (shown) show(shown);
+      if (Date.now() - checkedAt > 60_000) void check();
     };
     void check();
     document.addEventListener("visibilitychange", recheck);
     window.addEventListener("focus", recheck);
+    window.addEventListener("pageshow", (e) => e.persisted && recheck());
   }
 
   // Read the weekly chart by pointer (hover, or drag on touch) and by keyboard (arrow keys,
