@@ -18,6 +18,7 @@ jobs:
     # The profile form auto-applies the `profile` label; ignore every other issue.
     if: contains(github.event.issue.labels.*.name, 'profile')
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     permissions:
       contents: write
       pull-requests: write
