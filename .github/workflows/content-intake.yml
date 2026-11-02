@@ -17,6 +17,7 @@ jobs:
   intake:
     if: ${{ contains(github.event.issue.labels.*.name, 'project') || contains(github.event.issue.labels.*.name, 'publication') }}
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     permissions:
       contents: write
       pull-requests: write

@@ -24,6 +24,7 @@ jobs:
   changes:
     name: Detect changes
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     outputs:
       app: ${{ steps.filter.outputs.app }}
     steps:
@@ -48,6 +49,7 @@ jobs:
   build:
     name: Build
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     # Always runs (content + app PRs): `astro build` validates content-collection
     # frontmatter against the Zod schemas, so it's the gate that actually protects
     # a content-only PR. The app suite below skips on content-only PRs.
@@ -65,6 +67,7 @@ jobs:
   lint:
     name: Lint + format
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     needs: changes
     if: ${{ needs.changes.outputs.app == 'true' }}
     steps:
@@ -87,6 +90,7 @@ jobs:
   type-check:
     name: Type check
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     needs: changes
     if: ${{ needs.changes.outputs.app == 'true' }}
     steps:
@@ -103,6 +107,7 @@ jobs:
   unit:
     name: Unit (Vitest)
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     needs: changes
     if: ${{ needs.changes.outputs.app == 'true' }}
     steps:
